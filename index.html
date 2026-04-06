@@ -1839,6 +1839,376 @@ tr:hover td{background:var(--gray-50)}
 ════════════════════════════════════════════════════════════ -->
 <script>
 
+// ════════════════════════════════════════════════════════════
+// SUPABASE INTEGRATION — SMC Digital Invitro Diagnostics
+// ════════════════════════════════════════════════════════════
+
+const SUPA_URL = 'https://jqkizoryuozkhoyccbji.supabase.co';
+const SUPA_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Impxa2l6b3J5dW96a2hveWNjYmppIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzU0NjkzODMsImV4cCI6MjA5MTA0NTM4M30.bXn3ZIQwyz7HL5YxmUCy7Qn1a9SQj0iP8p3qz4GllEI';
+
+// ─── SUPABASE CLIENT ──────────────────────────────────────
+async function supaFetch(method, path, body) {
+  const headers = {
+    'apikey': SUPA_KEY,
+    'Authorization': 'Bearer ' + SUPA_KEY,
+    'Content-Type': 'application/json',
+  };
+  if (method === 'POST') headers['Prefer'] = 'resolution=merge-duplicates,return=representation';
+  if (method === 'DELETE') headers['Prefer'] = 'return=representation';
+  const opts = { method, headers };
+  if (body) opts.body = JSON.stringify(body);
+  try {
+    const res = await fetch(SUPA_URL + '/rest/v1/' + path, opts);
+    if (!res.ok) {
+      const err = await res.text();
+      console.error('Supabase error:', method, path, err);
+      throw new Error(err);
+    }
+    const text = await res.text();
+    return text ? JSON.parse(text) : [];
+  } catch(e) {
+    if (e.message === 'Failed to fetch') {
+      throw new Error('Conexiune imposibilă la Supabase. Verificați internetul.');
+    }
+    throw e;
+  }
+}
+
+// ─── SYNC STATUS ──────────────────────────────────────────
+let syncStatus = 'offline'; // 'online', 'offline', 'syncing'
+let pendingSync = []; // operations to sync when back online
+
+function setSyncStatus(status) {
+  syncStatus = status;
+  const el = document.getElementById('sync-indicator');
+  if (!el) return;
+  const colors = { online: 'var(--green)', offline: 'var(--amber)', syncing: 'var(--blue)' };
+  const labels = { online: '● Online', offline: '○ Offline', syncing: '⟳ Sync...' };
+  el.style.color = colors[status];
+  el.textContent = labels[status];
+}
+
+// ─── LOAD FROM SUPABASE ───────────────────────────────────
+async function loadFromSupabase() {
+  setSyncStatus('syncing');
+  showLoadingOverlay('Se încarcă datele...');
+  try {
+    // Load all tables in parallel
+    const [iqc, mc, serii, nc, eqaProg, eqaRez, ffp, verifNc,
+           servicii, metro, stoc, miscari, docs, dosar, fisiere, pins] = await Promise.all([
+      supaFetch('GET', 'iqc_data?order=data.desc&limit=1000'),
+      supaFetch('GET', 'mc_data?order=ts.desc'),
+      supaFetch('GET', 'serii_data?order=data.desc&limit=500'),
+      supaFetch('GET', 'nc_data?order=data.desc&limit=500'),
+      supaFetch('GET', 'eqa_prog?order=an.desc'),
+      supaFetch('GET', 'eqa_rez?order=runda.asc'),
+      supaFetch('GET', 'ffp_data?order=grupa.asc'),
+      supaFetch('GET', 'verif_nc?order=ts.desc&limit=200'),
+      supaFetch('GET', 'servicii?order=cod.asc'),
+      supaFetch('GET', 'metro_data?order=data_sc.asc'),
+      supaFetch('GET', 'stoc_data?order=cod.asc'),
+      supaFetch('GET', 'miscari?order=ts.desc&limit=200'),
+      supaFetch('GET', 'docs?order=cod.asc'),
+      supaFetch('GET', 'dosar_data?order=ts.desc'),
+      supaFetch('GET', 'fisiere?order=ts.desc'),
+      supaFetch('GET', 'pins'),
+    ]);
+
+    IQC_DATA   = iqc;
+    MC_DATA    = mc;
+    SERII_DATA = serii;
+    NC_DATA    = nc;
+    EQA_PROG   = eqaProg;
+    EQA_REZ    = eqaRez;
+    FFP_DATA   = ffp;
+    VERIF_NC   = verifNc;
+    SERVICII   = servicii;
+    METRO_DATA = metro;
+    STOC_DATA  = stoc;
+    MISCARI    = miscari;
+    PINS       = {};
+    pins.forEach(p => PINS[p.personal_id] = p.pin_hash);
+
+    // Rebuild DOC_FILES from fisiere table
+    DOC_FILES  = {};
+    METRO_FILES = {};
+    DOSAR_DATA = {};
+
+    fisiere.forEach(f => {
+      if (f.ref_type === 'doc') {
+        if (!DOC_FILES[f.ref_id]) DOC_FILES[f.ref_id] = [];
+        DOC_FILES[f.ref_id].push(f);
+      } else if (f.ref_type === 'metro') {
+        METRO_FILES[f.ref_id] = f;
+      }
+    });
+
+    dosar.forEach(d => {
+      if (!DOSAR_DATA[d.personal_id]) DOSAR_DATA[d.personal_id] = [];
+      DOSAR_DATA[d.personal_id].push(d);
+    });
+
+    // Merge docs with default docs (keep preloaded if not in DB)
+    if (docs.length > 0) {
+      DOCS = docs;
+    }
+
+    setSyncStatus('online');
+    hideLoadingOverlay();
+    renderDashboard();
+    console.log('Loaded from Supabase:', {iqc: iqc.length, nc: nc.length, servicii: servicii.length});
+  } catch(e) {
+    console.error('Supabase load error:', e);
+    setSyncStatus('offline');
+    hideLoadingOverlay();
+    showToast('⚠ Offline — se folosesc date locale. Verificați internetul.', 'error');
+    // Fall back to localStorage
+    loadFromLocalStorage();
+  }
+}
+
+// ─── SAVE TO SUPABASE ─────────────────────────────────────
+async function upsertRecord(table, record) {
+  saveLocalBackup(table, record);
+  try {
+    // Use UPSERT - POST with on_conflict header
+    const headers = {
+      'apikey': SUPA_KEY,
+      'Authorization': 'Bearer ' + SUPA_KEY,
+      'Content-Type': 'application/json',
+      'Prefer': 'resolution=merge-duplicates,return=representation'
+    };
+    const res = await fetch(SUPA_URL + '/rest/v1/' + table, {
+      method: 'POST',
+      headers,
+      body: JSON.stringify(record)
+    });
+    if (!res.ok) {
+      const err = await res.text();
+      throw new Error(err);
+    }
+    setSyncStatus('online');
+  } catch(e) {
+    console.warn('Supabase save failed, queued:', table, e.message);
+    setSyncStatus('offline');
+    pendingSync.push({table, record, ts: Date.now()});
+  }
+}
+
+async function deleteRecord(table, id) {
+  try {
+    await supaFetch('DELETE', table + '?id=eq.' + id);
+  } catch(e) {
+    console.warn('Delete failed:', table, id);
+  }
+}
+
+// ─── BATCH SYNC PENDING ───────────────────────────────────
+async function syncPending() {
+  if (!pendingSync.length) return;
+  setSyncStatus('syncing');
+  const toSync = [...pendingSync];
+  pendingSync = [];
+  for (const op of toSync) {
+    try {
+      await supaFetch('POST', op.table + '?on_conflict=id', op.record);
+    } catch(e) {
+      pendingSync.push(op); // re-queue
+    }
+  }
+  setSyncStatus(pendingSync.length ? 'offline' : 'online');
+}
+
+// Try to sync pending every 30 seconds
+setInterval(syncPending, 30000);
+
+// ─── LOADING OVERLAY ──────────────────────────────────────
+function showLoadingOverlay(msg) {
+  let el = document.getElementById('loading-overlay');
+  if (!el) {
+    el = document.createElement('div');
+    el.id = 'loading-overlay';
+    el.style.cssText = 'position:fixed;inset:0;background:rgba(255,255,255,.9);z-index:8888;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px';
+    el.innerHTML = '<div style="font-size:40px">🔬</div><div style="font-size:16px;font-weight:600;color:var(--blue)" id="loading-msg">Se încarcă...</div><div style="font-size:13px;color:var(--gray-400)">Invitro Diagnostics · SMC Digital</div>';
+    document.body.appendChild(el);
+  }
+  const msgEl = document.getElementById('loading-msg');
+  if (msgEl) msgEl.textContent = msg || 'Se încarcă...';
+  el.style.display = 'flex';
+}
+
+function hideLoadingOverlay() {
+  const el = document.getElementById('loading-overlay');
+  if (el) el.style.display = 'none';
+}
+
+// ─── LOCAL BACKUP ─────────────────────────────────────────
+function saveLocalBackup(table, record) {
+  try {
+    const key = 'smc_backup_' + table;
+    const existing = JSON.parse(localStorage.getItem(key) || '[]');
+    const idx = existing.findIndex(r => r.id === record.id);
+    if (idx >= 0) existing[idx] = record; else existing.push(record);
+    localStorage.setItem(key, JSON.stringify(existing));
+  } catch(e) {}
+}
+
+function loadFromLocalStorage() {
+  // Fallback: load from localStorage backup
+  IQC_DATA   = loadData('smc_iqc', []);
+  MC_DATA    = loadData('smc_mc', []);
+  SERII_DATA = loadData('smc_serii', []);
+  NC_DATA    = loadData('smc_nc', []);
+  EQA_PROG   = loadData('smc_eqa_prog', []);
+  EQA_REZ    = loadData('smc_eqa_rez', []);
+  FFP_DATA   = loadData('smc_ffp', []);
+  VERIF_NC   = loadData('smc_verif_nc', []);
+  SERVICII   = loadData('smc_servicii', []);
+  METRO_DATA = loadData('smc_metro', []);
+  STOC_DATA  = loadData('smc_stoc', []);
+  MISCARI    = loadData('smc_miscari', []);
+  PINS       = loadData('smc_pins', {});
+  DOC_FILES  = loadData('smc_doc_files', {});
+  METRO_FILES= loadData('smc_metro_files', {});
+  DOSAR_DATA = loadData('smc_dosar', {});
+  renderDashboard();
+}
+
+// ─── SUPABASE SAVE FUNCTIONS (replace saveData calls) ─────
+// These are called from existing save functions
+
+async function supa_saveIQC(rec) { await upsertRecord('iqc_data', rec); }
+async function supa_saveMC(rec)  { await upsertRecord('mc_data', rec); }
+async function supa_saveSerie(rec) { await upsertRecord('serii_data', rec); }
+async function supa_saveNC(rec)  { await upsertRecord('nc_data', rec); }
+async function supa_saveEQAProg(rec) { await upsertRecord('eqa_prog', rec); }
+async function supa_saveEQARez(rec)  { await upsertRecord('eqa_rez', rec); }
+async function supa_saveFFP(rec) { await upsertRecord('ffp_data', rec); }
+async function supa_saveVerifNC(rec) { await upsertRecord('verif_nc', rec); }
+async function supa_saveServiciu(rec) { await upsertRecord('servicii', rec); }
+async function supa_saveMetro(rec) { await upsertRecord('metro_data', rec); }
+async function supa_saveStoc(rec) { await upsertRecord('stoc_data', rec); }
+async function supa_saveMiscare(rec) { await upsertRecord('miscari', rec); }
+async function supa_saveDoc(rec) { await upsertRecord('docs', rec); }
+async function supa_saveDosarDoc(rec) { await upsertRecord('dosar_data', rec); }
+
+async function supa_deleteRecord(table, id) { await deleteRecord(table, id); }
+
+async function supa_savePIN(personalId, pinHash) {
+  await upsertRecord('pins', {personal_id: personalId, pin_hash: pinHash, updated_at: new Date().toISOString()});
+}
+
+// ─── FILE UPLOAD TO SUPABASE ──────────────────────────────
+async function supa_uploadFile(refType, refId, fileData) {
+  // Store file data directly in fisiere table (base64)
+  // For large files, Supabase Storage would be better but requires more setup
+  const rec = {
+    id: 'FILE-' + Date.now(),
+    ref_type: refType,
+    ref_id: refId,
+    name: fileData.name,
+    size: fileData.size,
+    mime_type: fileData.type,
+    storage_path: fileData.data, // base64 stored directly for now
+    ts: new Date().toISOString()
+  };
+  await upsertRecord('fisiere', rec);
+  return rec;
+}
+
+async function supa_deleteFile(fileId) {
+  await deleteRecord('fisiere', fileId);
+}
+
+// ─── REALTIME SUBSCRIPTIONS ───────────────────────────────
+function initRealtime() {
+  // Poll for changes every 60 seconds (simple approach without WebSocket)
+  setInterval(async () => {
+    if (syncStatus === 'online') {
+      try {
+        // Check for recent IQC (last 2 minutes)
+        const since = new Date(Date.now() - 120000).toISOString();
+        const recent = await supaFetch('GET', 'iqc_data?ts=gt.' + since);
+        if (recent.length > 0) {
+          recent.forEach(r => {
+            if (!IQC_DATA.find(d => d.id === r.id)) {
+              IQC_DATA.unshift(r);
+              showToast('Date noi IQC sincronizate de la un coleg');
+            }
+          });
+        }
+      } catch(e) {}
+    }
+  }, 60000);
+}
+
+// ─── TOAST NOTIFICATION ───────────────────────────────────
+function showToast(msg, type) {
+  const toast = document.createElement('div');
+  toast.style.cssText = 'position:fixed;bottom:20px;right:20px;background:' +
+    (type==='error'?'var(--red)':'var(--blue)') +
+    ';color:#fff;padding:12px 20px;border-radius:8px;font-size:13px;z-index:9999;box-shadow:0 4px 12px rgba(0,0,0,.2);animation:slideIn .3s ease';
+  toast.textContent = msg;
+  document.body.appendChild(toast);
+  setTimeout(() => toast.remove(), 4000);
+}
+
+// ─── INIT SUPABASE ────────────────────────────────────────
+async function initSupabase() {
+  // Add sync indicator to header
+  setTimeout(() => {
+    const userBtn = document.getElementById('user-btn');
+    if (userBtn) {
+      const indicator = document.createElement('span');
+      indicator.id = 'sync-indicator';
+      indicator.style.cssText = 'margin-left:12px;font-size:11px;font-weight:600';
+      indicator.textContent = '⟳ Conectare...';
+      userBtn.parentNode.insertBefore(indicator, userBtn.nextSibling);
+    }
+  }, 500);
+
+  await loadFromSupabase();
+  initRealtime();
+}
+
+
+// ─── SYNC BRIDGE: localStorage key -> Supabase table ─────
+const KEY_TABLE_MAP = {
+  'smc_iqc': 'iqc_data',
+  'smc_mc': 'mc_data',
+  'smc_serii': 'serii_data',
+  'smc_nc': 'nc_data',
+  'smc_eqa_prog': 'eqa_prog',
+  'smc_eqa_rez': 'eqa_rez',
+  'smc_ffp': 'ffp_data',
+  'smc_verif_nc': 'verif_nc',
+  'smc_servicii': 'servicii',
+  'smc_metro': 'metro_data',
+  'smc_stoc': 'stoc_data',
+  'smc_miscari': 'miscari',
+};
+
+// Debounce sync to avoid too many calls
+const syncDebounce = {};
+function syncToSupabase(key, data) {
+  if(!KEY_TABLE_MAP[key]) return;
+  if(syncDebounce[key]) clearTimeout(syncDebounce[key]);
+  syncDebounce[key] = setTimeout(async () => {
+    const table = KEY_TABLE_MAP[key];
+    if(!Array.isArray(data)) return;
+    // Only sync the last modified record (most recent by ts)
+    const sorted = [...data].sort((a,b) => (b.ts||'').localeCompare(a.ts||''));
+    if(sorted.length && sorted[0]) {
+      try {
+        await upsertRecord(table, sorted[0]);
+      } catch(e) {
+        console.warn('Sync failed for', key);
+      }
+    }
+  }, 1000);
+}
+
+
 
 // ─── DATA ────────────────────────────────────────────────────
 const CONFIG = {
@@ -2216,7 +2586,12 @@ function importData(input){
 
 // ─── STORAGE HELPERS ─────────────────────────────────────────
 function loadData(key, def){ return JSON.parse(localStorage.getItem(key)||'null') || def; }
-function saveData(key, val){ localStorage.setItem(key, JSON.stringify(val)); }
+function saveData(key,data){
+  // Always save to localStorage as backup
+  try{localStorage.setItem(key,JSON.stringify(data));}catch(e){}
+  // Sync last modified record to Supabase
+  if(typeof syncToSupabase==='function') syncToSupabase(key, data);
+}
 
 let IQC_DATA    = loadData('smc_iqc', []);
 let MC_DATA     = loadData('smc_mc', []);
@@ -4163,18 +4538,17 @@ function saveDocAttach(){
 function openDocFile(docId,idx){
   const f=(DOC_FILES[docId]||[])[idx];
   if(!f) return;
-  // Open in new browser tab
-  const blob=new Blob([_base64ToArrayBuffer(f.data)],{type:f.type||'application/pdf'});
-  const url=URL.createObjectURL(blob);
-  window.open(url,'_blank');
-}
-
-function _base64ToArrayBuffer(dataUrl){
-  const base64=dataUrl.split(',')[1];
-  const binary=atob(base64);
-  const bytes=new Uint8Array(binary.length);
-  for(let i=0;i<binary.length;i++) bytes[i]=binary.charCodeAt(i);
-  return bytes.buffer;
+  if(f.type && f.type.includes('pdf')){
+    // Pentru PDF: deschidem un tab nou cu viewer inline
+    const win=window.open('','_blank');
+    win.document.write('<html><head><title>'+f.name+'</title><style>body,html{margin:0;padding:0;height:100%}iframe{width:100%;height:100%;border:none}</style></head><body><iframe src="'+f.data+'"></iframe></body></html>');
+    win.document.close();
+  } else {
+    // Pentru imagini: afișare directă
+    const win=window.open('','_blank');
+    win.document.write('<html><head><title>'+f.name+'</title><style>body{margin:0;background:#222;display:flex;align-items:center;justify-content:center;min-height:100vh}img{max-width:100%;max-height:100vh;object-fit:contain}</style></head><body><img src="'+f.data+'" alt="'+f.name+'"></body></html>');
+    win.document.close();
+  }
 }
 
 function downloadDocFile(docId,idx){
@@ -5377,7 +5751,8 @@ DOSAR_DATA = loadData('smc_dosar', {});
 
 
 // ─── INIT
-renderDashboard();
+initSupabase(); // loads from Supabase then renders
+
 
 
 
