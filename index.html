@@ -156,7 +156,7 @@ tr:hover td{background:var(--gray-50)}
 
 /* ─── Modal ──────────────────────────────────────────────────── */
 .modal-bg{display:none;position:fixed;inset:0;background:rgba(0,0,0,.4);z-index:1000;align-items:center;justify-content:center}
-.modal-bg.open{display:flex!important}
+.modal-bg.open{display:flex!important;visibility:visible!important}
 .modal{background:#fff;border-radius:var(--radius-lg);padding:28px;max-width:480px;width:90%;box-shadow:0 20px 40px rgba(0,0,0,.2)}
 .modal h3{font-size:17px;font-weight:600;margin-bottom:16px;color:var(--gray-800)}
 .modal-footer{display:flex;justify-content:flex-end;gap:8px;margin-top:20px}
@@ -169,7 +169,7 @@ tr:hover td{background:var(--gray-50)}
 
 /* ─── Print ──────────────────────────────────────────────────── */
 @media print{
-  #top-header,#nav,#footer,.btn,.search-bar,.modal-bg{display:none!important}
+  #top-header,#nav,#footer,.btn,.search-bar,.modal-bg:not(.open){display:none!important}
   #main{padding:0}
   .card,.table-wrap{box-shadow:none;border:1px solid #ccc}
 }
