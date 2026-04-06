@@ -895,7 +895,7 @@ tr:hover td{background:var(--gray-50)}
     <div style="display:flex;gap:8px">
       <button class="btn btn-outline" onclick="exportEQAExcel()">&#128194; Export Excel</button>
       <button class="btn btn-outline" onclick="window.print()">&#128438; Print</button>
-      <button class="btn btn-primary" onclick="showModal('modal-eqa-prog')">+ Program nou</button>
+      <button class="btn btn-primary" onclick="openEQAProgModal()">+ Program nou</button>
     </div>
   </div>
   <div id="eqa-prog-tabs" style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px;border-bottom:2px solid var(--gray-200);padding-bottom:8px"></div>
@@ -6003,13 +6003,20 @@ document.addEventListener('click', e=>{
   }
 });
 
-// Populate EQA kit select when modal opens
-const _origShowModal = showModal;
-function showModal(id){
-  _origShowModal(id);
-  if(id==='modal-eqa-prog') populateEQAKitSelect();
-}
+// Populate EQA kit select when modal opens - NO OVERRIDE
+// Instead patch openMetroAdd and openEQAProgModal directly
 
+
+
+function openEQAProgModal(){
+  populateEQAKitSelect();
+  clearSrvEQA();
+  ['eqa-prog-den','eqa-prog-org','eqa-prog-runde','eqa-prog-obs'].forEach(id=>{
+    const el=document.getElementById(id); if(el) el.value='';
+  });
+  document.getElementById('eqa-prog-an').value=new Date().getFullYear();
+  showModal('modal-eqa-prog');
+}
 
 // ─── INIT
 initSupabase(); // loads from Supabase then renders
