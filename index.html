@@ -934,6 +934,10 @@ tr:hover td{background:var(--gray-50)}
   <div class="page-header">
     <div><div class="page-title">Rapoarte SMC</div>
       <div class="page-subtitle">Rapoarte lunare, audit intern, adecvare la scop</div></div>
+    <div style="display:flex;gap:8px">
+      <button class="btn btn-outline" onclick="printRaport()">&#128438; Print</button>
+      <button class="btn btn-primary" onclick="exportRaportPDF()">&#128196; Export PDF</button>
+    </div>
   </div>
 
   <!-- Tab selector -->
@@ -1421,6 +1425,26 @@ tr:hover td{background:var(--gray-50)}
       <div class="form-group"><label>Nr. runde planificate</label>
         <input type="number" id="eqa-prog-runde" placeholder="ex. 4" min="1" max="12"></div>
     </div>
+    <div class="form-group" style="margin-bottom:12px">
+      <label>Serviciu verificat <span style="font-size:11px;color:var(--gray-400)">(din catalog)</span></label>
+      <div style="display:flex;gap:8px">
+        <input type="text" id="eqa-prog-srv-search" placeholder="&#128269; Caută cod sau denumire serviciu..."
+          oninput="filterSrvEQA()" autocomplete="off"
+          style="flex:1;padding:8px 10px;border:1px solid var(--gray-200);border-radius:var(--radius);font-size:13px">
+        <button class="btn btn-outline" onclick="clearSrvEQA()">&#215;</button>
+      </div>
+      <div id="eqa-prog-srv-dropdown" style="display:none;position:absolute;z-index:300;background:#fff;border:1px solid var(--gray-200);border-radius:var(--radius);box-shadow:0 8px 24px rgba(0,0,0,.12);max-height:180px;overflow-y:auto;width:calc(100% - 48px)"></div>
+      <div id="eqa-prog-srv-selected" style="margin-top:6px;min-height:24px;font-size:12px;color:var(--blue)"></div>
+      <input type="hidden" id="eqa-prog-srv-id">
+      <input type="hidden" id="eqa-prog-srv-cod">
+    </div>
+    <div class="form-group" style="margin-bottom:12px">
+      <label>Kit utilizat <span style="font-size:11px;color:var(--gray-400)">(din stocuri)</span></label>
+      <select id="eqa-prog-kit-id" onchange="onEQAKitChange()">
+        <option value="">— selectați kitul —</option>
+      </select>
+      <div id="eqa-prog-kit-info" style="font-size:11px;color:var(--gray-500);margin-top:4px"></div>
+    </div>
     <div class="form-group" style="margin-bottom:4px"><label>Observații</label>
       <input type="text" id="eqa-prog-obs" placeholder="Opțional"></div>
     <div class="modal-footer">
@@ -1440,8 +1464,12 @@ tr:hover td{background:var(--gray-50)}
       <div class="form-group"><label>Data primirii</label>
         <input type="date" id="eqa-rez-data"></div>
     </div>
-    <div class="form-group" style="margin-bottom:12px"><label>Material / Analit testat</label>
-      <input type="text" id="eqa-rez-material" placeholder="ex. Chlamydia trachomatis DNA"></div>
+    <div class="form-row">
+      <div class="form-group"><label>Material / Analit testat</label>
+        <input type="text" id="eqa-rez-material" placeholder="ex. Chlamydia trachomatis DNA"></div>
+      <div class="form-group" style="max-width:120px"><label>Nr. probe testate</label>
+        <input type="number" id="eqa-rez-nr-probe" min="1" placeholder="ex. 5" value="1"></div>
+    </div>
     <div class="form-row">
       <div class="form-group"><label>Rezultat laborator nostru</label>
         <input type="text" id="eqa-rez-lab" placeholder="ex. Pozitiv / 1500 UI/mL"></div>
@@ -2196,16 +2224,18 @@ function syncToSupabase(key, data) {
   syncDebounce[key] = setTimeout(async () => {
     const table = KEY_TABLE_MAP[key];
     if(!Array.isArray(data)) return;
-    // Only sync the last modified record (most recent by ts)
-    const sorted = [...data].sort((a,b) => (b.ts||'').localeCompare(a.ts||''));
-    if(sorted.length && sorted[0]) {
+    // Sync records modified in the last 5 seconds
+    const cutoff = new Date(Date.now() - 5000).toISOString();
+    const recent = data.filter(r => r.ts && r.ts >= cutoff);
+    const toSync = recent.length > 0 ? recent : (data.length > 0 ? [data[data.length-1]] : []);
+    for(const rec of toSync) {
       try {
-        await upsertRecord(table, sorted[0]);
+        await upsertRecord(table, rec);
       } catch(e) {
-        console.warn('Sync failed for', key);
+        console.warn('Sync failed for', key, e.message);
       }
     }
-  }, 1000);
+  }, 500);
 }
 
 
@@ -2485,7 +2515,13 @@ function resetDocFilters(){
 }
 function filterByGrupa(cod){showPage('documente');setTimeout(()=>{document.getElementById('doc-search').value=cod;renderDocs();},50)}
 function openDoc(fisier){alert('Deschide fișier: '+fisier+'\n\nPentru a funcționa, copiați fișierele PDF/DOCX în folderul aplicației și actualizați calea.')}
-function deleteDoc(id){if(confirm('Ștergeți documentul din baza de date?')){DOCS=DOCS.filter(d=>d.id!==id);saveDocs();renderDocs();renderDashboard()}}
+function deleteDoc(id){
+  if(confirm('Ștergeți documentul din baza de date?')){
+    if(typeof deleteRecord==='function') deleteRecord('docs', id).catch(e=>{});
+    DOCS=DOCS.filter(d=>d.id!==id);
+    saveDocs();renderDocs();renderDashboard();
+  }
+}
 function addDoc(){
   const cod=document.getElementById('new-doc-cod').value.trim();
   const titlu=document.getElementById('new-doc-titlu').value.trim();
@@ -2502,6 +2538,7 @@ function addDoc(){
     editie:1,revizie:1,data_vigoare:'',status:status
   });
   saveDocs();
+  if(typeof upsertRecord==='function') upsertRecord('docs', DOCS[DOCS.length-1]).catch(e=>{});
   renderDocs();
   closeModal('modal-adddoc');
   document.getElementById('new-doc-cod').value='';
@@ -3062,6 +3099,8 @@ function saveNC(){
   };
   NC_DATA.push(rec);
   saveData('smc_nc',NC_DATA);
+  // Direct upsert to Supabase
+  if(typeof upsertRecord==='function') upsertRecord('nc_data', rec).catch(e=>console.warn('NC save failed',e));
   closeModal('modal-nc-add');
   renderNC();
   updateNCBadge();
@@ -3157,7 +3196,10 @@ function closeNC(id, fromDetail){
   d.status='inchis';
   d.actiune_corectiva=ac;
   d.data_inchidere=todayStr();
+  d.ts=new Date().toISOString(); // update ts so sync picks it up
   saveData('smc_nc',NC_DATA);
+  // Direct upsert to Supabase
+  if(typeof upsertRecord==='function') upsertRecord('nc_data', d).catch(e=>console.warn('NC sync failed',e));
   closeModal('modal-nc-detail');
   renderNC();
   updateNCBadge();
@@ -3457,52 +3499,9 @@ function saveVerifNC(){
 }
 
 // ─── EQA ──────────────────────────────────────────────────────
-function saveEQAProg(){
-  const den = document.getElementById('eqa-prog-den').value.trim();
-  if(!den){alert('Introduceți denumirea programului!');return;}
-  const rec = {
-    id: 'EQAP-'+Date.now(),
-    denumire: den,
-    organizator: document.getElementById('eqa-prog-org').value,
-    an: parseInt(document.getElementById('eqa-prog-an').value)||new Date().getFullYear(),
-    grupa: document.getElementById('eqa-prog-grupa').value,
-    runde_plan: parseInt(document.getElementById('eqa-prog-runde').value)||4,
-    obs: document.getElementById('eqa-prog-obs').value,
-    ts: new Date().toISOString()
-  };
-  EQA_PROG.push(rec);
-  saveData('smc_eqa_prog', EQA_PROG);
-  closeModal('modal-eqa-prog');
-  document.getElementById('eqa-prog-den').value='';
-  document.getElementById('eqa-prog-org').value='';
-  document.getElementById('eqa-prog-runde').value='';
-  activeEQAProg = rec.id;
-  renderEQA();
-}
+// saveEQAProg: see updated version below
 
-function saveEQARez(){
-  const runda = parseInt(document.getElementById('eqa-rez-runda').value);
-  const material = document.getElementById('eqa-rez-material').value.trim();
-  if(!runda||!material){alert('Completați runda și materialul!');return;}
-  const rec = {
-    id: 'EQAR-'+Date.now(),
-    prog_id: activeEQAProg,
-    runda: runda,
-    data: document.getElementById('eqa-rez-data').value,
-    material: material,
-    rez_lab: document.getElementById('eqa-rez-lab').value,
-    rez_consens: document.getElementById('eqa-rez-consens').value,
-    scor: document.getElementById('eqa-rez-scor').value,
-    eval: document.getElementById('eqa-rez-eval').value,
-    ac: document.getElementById('eqa-rez-ac').value,
-    ts: new Date().toISOString()
-  };
-  EQA_REZ.push(rec);
-  saveData('smc_eqa_rez', EQA_REZ);
-  closeModal('modal-eqa-rez');
-  renderEQA();
-  renderDashboard();
-}
+// saveEQARez: see updated version below
 
 function renderEQA(){
   // Tabs
@@ -3527,7 +3526,9 @@ function renderEQA(){
     const rezCount = EQA_REZ.filter(r=>r.prog_id===p.id).length;
     const isBad = EQA_REZ.some(r=>r.prog_id===p.id&&r.eval==='nesatisfacator');
     return `<button class="nav-btn${p.id===activeEQAProg?' active':''}" onclick="switchEQAProg('${p.id}')" style="height:38px;font-size:12px">
-      ${isBad?'<span style="color:var(--red)">&#9888;</span> ':''}${p.denumire} (${p.an}) <span style="color:var(--gray-400);margin-left:4px">${rezCount}/${p.runde_plan}</span>
+      ${isBad?'<span style="color:var(--red)">&#9888;</span> ':''}${p.denumire} (${p.an})
+      ${p.srv_cod?`<span style="font-size:10px;color:var(--blue);margin-left:4px">[${p.srv_cod}]</span>`:''}
+      <span style="color:var(--gray-400);margin-left:4px">${rezCount}/${p.runde_plan}</span>
       <button onclick="event.stopPropagation();deleteEQAProg('${p.id}')" style="background:none;border:none;color:var(--gray-400);cursor:pointer;padding:0 0 0 6px;font-size:14px">&#215;</button>
     </button>`;
   }).join('');
@@ -3548,7 +3549,7 @@ function renderEQA(){
     <div class="card" style="margin-bottom:16px">
       <div style="display:flex;align-items:center;gap:16px;flex-wrap:wrap">
         <div><div style="font-size:16px;font-weight:600">${prog.denumire}</div>
-          <div style="font-size:12px;color:var(--gray-500)">${prog.organizator} · An ${prog.an} · Grupă ${prog.grupa} · ${prog.runde_plan} runde planificate</div></div>
+          <div style="font-size:12px;color:var(--gray-500)">${prog.organizator} · An ${prog.an} · Grupă ${prog.grupa} · ${prog.runde_plan} runde planificate${prog.srv_cod?' · 🔬 '+prog.srv_cod:''}${prog.kit_den?' · 🧪 '+prog.kit_den:''}</div></div>
         <div style="flex:1"></div>
         <div class="stat-grid" style="margin:0;gap:12px;grid-template-columns:repeat(4,auto)">
           <div class="stat-card" style="padding:12px"><div class="stat-val" style="font-size:22px;color:var(--blue)">${total}</div><div class="stat-lbl">Runde</div></div>
@@ -3606,6 +3607,10 @@ function openEQARezModal(progId){
 
 function deleteEQAProg(id){
   if(!confirm('Ștergeți programul EQA și toate rezultatele sale?')) return;
+  // Delete rezultate from Supabase first
+  const rezIds = EQA_REZ.filter(r=>r.prog_id===id).map(r=>r.id);
+  rezIds.forEach(rid => { if(typeof deleteRecord==='function') deleteRecord('eqa_rez', rid).catch(e=>{}); });
+  if(typeof deleteRecord==='function') deleteRecord('eqa_prog', id).catch(e=>{});
   EQA_PROG = EQA_PROG.filter(p=>p.id!==id);
   EQA_REZ  = EQA_REZ.filter(r=>r.prog_id!==id);
   saveData('smc_eqa_prog', EQA_PROG);
@@ -3615,6 +3620,7 @@ function deleteEQAProg(id){
 }
 function deleteEQARez(id){
   if(!confirm('Ștergeți acest rezultat?')) return;
+  if(typeof deleteRecord==='function') deleteRecord('eqa_rez', id).catch(e=>{});
   EQA_REZ = EQA_REZ.filter(r=>r.id!==id);
   saveData('smc_eqa_rez', EQA_REZ);
   renderEQA();
@@ -3686,6 +3692,8 @@ function saveFFPEdit(){
   m.interval = document.getElementById('ffp-edit-interval').value;
   m.bias = parseFloat(document.getElementById('ffp-edit-bias').value)||null;
   m.obs = document.getElementById('ffp-edit-obs').value;
+  m.ts = new Date().toISOString();
+  if(typeof upsertRecord==='function') upsertRecord('ffp_data', m).catch(e=>{});
   saveData('smc_ffp', FFP_DATA);
   closeModal('modal-ffp-edit');
   renderFFP();
@@ -3693,6 +3701,7 @@ function saveFFPEdit(){
 
 function deleteFFP(id){
   if(!confirm('Ștergeți această metodă?')) return;
+  if(typeof deleteRecord==='function') deleteRecord('ffp_data', id).catch(e=>{});
   FFP_DATA = FFP_DATA.filter(m=>m.id!==id);
   saveData('smc_ffp', FFP_DATA);
   renderFFP();
@@ -4156,6 +4165,7 @@ function deleteSrv(id){
   const s=SERVICII.find(x=>x.id===id);
   if(!s)return;
   if(!confirm('Ștergeți serviciul "'+s.den+'"?'))return;
+  if(typeof deleteRecord==='function') deleteRecord('servicii',id).catch(e=>{});
   SERVICII=SERVICII.filter(x=>x.id!==id);
   saveData('smc_servicii',SERVICII);
   renderCatalog();
@@ -4561,7 +4571,9 @@ function downloadDocFile(docId,idx){
 }
 
 function deleteDocFile(docId,idx){
+  const fileToDelete=(DOC_FILES[docId]||[])[idx];
   if(!confirm('Ștergeți fișierul atașat?'))return;
+  if(fileToDelete&&typeof deleteRecord==='function') deleteRecord('fisiere', fileToDelete.id).catch(e=>{});
   (DOC_FILES[docId]||[]).splice(idx,1);
   saveData('smc_doc_files',DOC_FILES);
   renderDocAttachExisting(docId);
@@ -4846,6 +4858,7 @@ function saveMetro(){
 
 function deleteMetro(id){
   if(!confirm('Ștergeți această înregistrare?'))return;
+  if(typeof deleteRecord==='function') deleteRecord('metro_data',id).catch(e=>{});
   METRO_DATA=METRO_DATA.filter(x=>x.id!==id);
   delete METRO_FILES[id];
   saveData('smc_metro',METRO_DATA);
@@ -5010,6 +5023,7 @@ function editStoc(id){
 function deleteStoc(id){
   const s=STOC_DATA.find(x=>x.id===id);
   if(!s||!confirm('Ștergeți kitul "'+s.den+'" din stoc?'))return;
+  if(typeof deleteRecord==='function') deleteRecord('stoc_data',id).catch(e=>{});
   STOC_DATA=STOC_DATA.filter(x=>x.id!==id);
   saveData('smc_stoc',STOC_DATA);
   renderStocuri();
@@ -5176,6 +5190,13 @@ function scadeStocSerie(serie){
   if(kitsAmp.length||kitsExt.length){
     saveData('smc_stoc',STOC_DATA);
     saveData('smc_miscari',MISCARI);
+    // Sync to Supabase directly
+    if(typeof upsertRecord==='function'){
+      kitsAmp.forEach(k=>upsertRecord('stoc_data',k).catch(e=>{}));
+      kitsExt.forEach(k=>upsertRecord('stoc_data',k).catch(e=>{}));
+      const lastMiscari=MISCARI.slice(-kitsAmp.length-kitsExt.length);
+      lastMiscari.forEach(m=>upsertRecord('miscari',m).catch(e=>{}));
+    }
   }
 }
 
@@ -5682,6 +5703,7 @@ function saveDosarDoc() {
 
 function deleteDosarDoc(personalId, docId) {
   if (!confirm('Ștergeți acest document din dosar?')) return;
+  if(typeof deleteRecord==='function') deleteRecord('dosar_data',docId).catch(e=>{});
   DOSAR_DATA[personalId] = (DOSAR_DATA[personalId] || []).filter(d => d.id !== docId);
   saveData('smc_dosar', DOSAR_DATA);
   renderDosarBody(personalId);
@@ -5748,6 +5770,245 @@ function renderPersonal() {
 
 // Init dosar data
 DOSAR_DATA = loadData('smc_dosar', {});
+
+
+
+// ─── PDF EXPORT & PRINT ───────────────────────────────────────
+function printRaport(){
+  // Open clean print window with just the report content
+  const bodyEl = document.getElementById('raport-lunar-body') ||
+                 document.getElementById('audit-body') ||
+                 document.getElementById('ffp-raport-body');
+  if(!bodyEl || !bodyEl.innerHTML.trim()){
+    alert('Generați mai întâi un raport înainte de a printa.');
+    return;
+  }
+  const win = window.open('','_blank');
+  win.document.write(`<!DOCTYPE html><html><head><meta charset="UTF-8">
+    <title>Raport SMC — Invitro Diagnostics</title>
+    <style>
+      body{font-family:Arial,sans-serif;font-size:12px;color:#1f2937;margin:20px;line-height:1.5}
+      table{width:100%;border-collapse:collapse;margin-bottom:16px}
+      th,td{border:1px solid #d1d5db;padding:6px 8px;font-size:11px;text-align:left}
+      th{background:#f3f4f6;font-weight:600}
+      .badge{padding:2px 6px;border-radius:4px;font-size:10px;font-weight:600}
+      .badge-existent{background:#d1fae5;color:#065f46}
+      .badge-prioritar{background:#fef3c7;color:#92400e}
+      .badge-lipsa{background:#fee2e2;color:#991b1b}
+      h2,h3{color:#1a56db;border-bottom:2px solid #1a56db;padding-bottom:4px}
+      @media print{button{display:none}}
+    </style></head><body>` + bodyEl.innerHTML + `</body></html>`);
+  win.document.close();
+  setTimeout(()=>win.print(), 500);
+}
+
+function exportRaportPDF(){
+  // Find active report body
+  const bodies = [
+    {id:'raport-lunar-body', name:'Raport_Lunar'},
+    {id:'audit-body', name:'Raport_Audit'},
+    {id:'ffp-raport-body', name:'Raport_FFP'}
+  ];
+  let bodyEl = null, name = 'Raport_SMC';
+  for(const b of bodies){
+    const el = document.getElementById(b.id);
+    if(el && el.innerHTML.trim()){bodyEl=el; name=b.name; break;}
+  }
+  if(!bodyEl){alert('Generați mai întâi un raport.'); return;}
+
+  const html = `<!DOCTYPE html><html><head><meta charset="UTF-8">
+    <title>${name}</title>
+    <style>
+      body{font-family:Arial,sans-serif;font-size:11px;color:#1f2937;margin:20mm;line-height:1.5}
+      table{width:100%;border-collapse:collapse;margin-bottom:12px;page-break-inside:avoid}
+      th,td{border:1px solid #d1d5db;padding:5px 7px;font-size:10px;text-align:left}
+      th{background:#f3f4f6;font-weight:600}
+      .badge{padding:1px 5px;border-radius:3px;font-size:9px;font-weight:600}
+      .badge-existent{background:#d1fae5;color:#065f46}
+      .badge-prioritar{background:#fef3c7;color:#92400e}
+      .badge-lipsa{background:#fee2e2;color:#991b1b}
+      h2,h3{color:#1a56db}
+      @page{margin:15mm}
+    </style></head><body>` + bodyEl.innerHTML + `</body></html>`;
+
+  const blob = new Blob([html], {type:'text/html;charset=utf-8'});
+  const url = URL.createObjectURL(blob);
+  const win = window.open(url,'_blank');
+  // After open, trigger print dialog which allows Save as PDF
+  if(win){
+    win.onload = ()=>{
+      setTimeout(()=>{
+        win.focus();
+        win.print();
+      }, 800);
+    };
+  }
+}
+
+// ─── EQA SERVICIU SEARCH ─────────────────────────────────────
+let eqaSrvSelected = null;
+
+function filterSrvEQA(){
+  const q=(document.getElementById('eqa-prog-srv-search').value||'').toLowerCase().trim();
+  const dd=document.getElementById('eqa-prog-srv-dropdown');
+  if(!q){dd.style.display='none';return;}
+  const matches=SERVICII.filter(s=>s.activ!==false&&(
+    s.cod.toLowerCase().includes(q)||s.den.toLowerCase().includes(q)
+  )).slice(0,10);
+  if(!matches.length){dd.style.display='none';return;}
+  dd.innerHTML=matches.map(s=>`<div onclick="selectSrvEQA('${s.id}')"
+    style="padding:8px 12px;cursor:pointer;font-size:13px;border-bottom:1px solid var(--gray-100)"
+    onmouseover="this.style.background='var(--gray-50)'" onmouseout="this.style.background=''">
+    <span style="font-family:monospace;font-size:12px;font-weight:700;color:var(--blue);margin-right:8px">${s.cod}</span>
+    ${s.den}
+    <span style="font-size:11px;color:var(--gray-400)"> · ${s.grupa}</span>
+  </div>`).join('');
+  dd.style.display='block';
+}
+
+function selectSrvEQA(id){
+  const s=SERVICII.find(x=>x.id===id);
+  if(!s)return;
+  eqaSrvSelected=s;
+  document.getElementById('eqa-prog-srv-id').value=s.id;
+  document.getElementById('eqa-prog-srv-cod').value=s.cod;
+  document.getElementById('eqa-prog-srv-search').value=s.cod+' — '+s.den;
+  document.getElementById('eqa-prog-srv-dropdown').style.display='none';
+  document.getElementById('eqa-prog-srv-selected').textContent='✓ '+s.cod+' — '+s.den+' ('+s.grupa+')';
+}
+
+function clearSrvEQA(){
+  eqaSrvSelected=null;
+  document.getElementById('eqa-prog-srv-id').value='';
+  document.getElementById('eqa-prog-srv-cod').value='';
+  document.getElementById('eqa-prog-srv-search').value='';
+  document.getElementById('eqa-prog-srv-selected').textContent='';
+  document.getElementById('eqa-prog-srv-dropdown').style.display='none';
+}
+
+function populateEQAKitSelect(){
+  const sel=document.getElementById('eqa-prog-kit-id');
+  if(!sel)return;
+  sel.innerHTML='<option value="">— fără kit specific —</option>'+
+    STOC_DATA.filter(s=>s.cantitate>0).sort((a,b)=>a.cod.localeCompare(b.cod)).map(s=>
+      `<option value="${s.id}">[${s.cod}] ${s.den} (stoc: ${s.cantitate} kituri, ${s.teste_per_kit} teste/kit)</option>`
+    ).join('');
+}
+
+function onEQAKitChange(){
+  const id=document.getElementById('eqa-prog-kit-id').value;
+  const s=STOC_DATA.find(x=>x.id===id);
+  const info=document.getElementById('eqa-prog-kit-info');
+  if(s&&info){
+    info.textContent=`Stoc curent: ${s.cantitate} kituri · ${s.teste_per_kit} teste/kit · Lot: ${s.lot||'—'}`;
+  } else if(info){
+    info.textContent='';
+  }
+}
+
+// ─── EQA SAVE UPDATED ────────────────────────────────────────
+function saveEQAProg(){
+  const den = document.getElementById('eqa-prog-den').value.trim();
+  if(!den){alert('Introduceți denumirea programului!');return;}
+  const rec = {
+    id: 'EQAP-'+Date.now(),
+    denumire: den,
+    organizator: document.getElementById('eqa-prog-org').value,
+    an: parseInt(document.getElementById('eqa-prog-an').value)||new Date().getFullYear(),
+    grupa: document.getElementById('eqa-prog-grupa').value,
+    runde_plan: parseInt(document.getElementById('eqa-prog-runde').value)||4,
+    srv_id: document.getElementById('eqa-prog-srv-id').value||null,
+    srv_cod: document.getElementById('eqa-prog-srv-cod').value||null,
+    kit_id: document.getElementById('eqa-prog-kit-id').value||null,
+    kit_den: (()=>{const sel=document.getElementById('eqa-prog-kit-id');return sel&&sel.value?sel.selectedOptions[0].text.split(']')[1]?.trim()||'':''})(),
+    obs: document.getElementById('eqa-prog-obs').value,
+    ts: new Date().toISOString()
+  };
+  EQA_PROG.push(rec);
+  saveData('smc_eqa_prog', EQA_PROG);
+  if(typeof upsertRecord==='function') upsertRecord('eqa_prog', rec).catch(e=>{});
+  closeModal('modal-eqa-prog');
+  // Reset form
+  ['eqa-prog-den','eqa-prog-org','eqa-prog-runde','eqa-prog-obs'].forEach(id=>{
+    const el=document.getElementById(id); if(el) el.value='';
+  });
+  clearSrvEQA();
+  activeEQAProg = rec.id;
+  renderEQA();
+}
+
+// ─── EQA REZ SAVE UPDATED (with stock deduction) ──────────────
+function saveEQARez(){
+  const runda = parseInt(document.getElementById('eqa-rez-runda').value);
+  const material = document.getElementById('eqa-rez-material').value.trim();
+  const nrProbe = parseInt(document.getElementById('eqa-rez-nr-probe').value)||1;
+  if(!runda||!material){alert('Completați runda și materialul!');return;}
+  const rec = {
+    id: 'EQAR-'+Date.now(),
+    prog_id: activeEQAProg,
+    runda: runda,
+    data: document.getElementById('eqa-rez-data').value,
+    material: material,
+    nr_probe: nrProbe,
+    rez_lab: document.getElementById('eqa-rez-lab').value,
+    rez_consens: document.getElementById('eqa-rez-consens').value,
+    scor: document.getElementById('eqa-rez-scor').value,
+    eval: document.getElementById('eqa-rez-eval').value,
+    ac: document.getElementById('eqa-rez-ac').value,
+    ts: new Date().toISOString()
+  };
+  EQA_REZ.push(rec);
+  saveData('smc_eqa_rez', EQA_REZ);
+  if(typeof upsertRecord==='function') upsertRecord('eqa_rez', rec).catch(e=>{});
+
+  // Scade din stoc kitul asociat programului
+  const prog = EQA_PROG.find(p=>p.id===activeEQAProg);
+  if(prog&&prog.kit_id&&nrProbe>0){
+    const kit = STOC_DATA.find(s=>s.id===prog.kit_id);
+    if(kit){
+      const testePerKit = kit.teste_per_kit||96;
+      const consumKit = nrProbe/testePerKit;
+      kit.cantitate = Math.max(0, kit.cantitate - consumKit);
+      kit.ts = new Date().toISOString();
+      // Log miscare
+      const mis = {
+        id:'MIS-'+Date.now(), kit_id:kit.id, kit_den:kit.den, kit_cod:kit.cod,
+        tip:'iesire', cant:consumKit, data:rec.data,
+        motiv:`EQA — ${prog.denumire} Runda ${runda} (${nrProbe} probe)`,
+        stoc_dupa:kit.cantitate, operator:currentUser.nume, ts:new Date().toISOString()
+      };
+      MISCARI.push(mis);
+      saveData('smc_stoc', STOC_DATA);
+      saveData('smc_miscari', MISCARI);
+      if(typeof upsertRecord==='function'){
+        upsertRecord('stoc_data', kit).catch(e=>{});
+        upsertRecord('miscari', mis).catch(e=>{});
+      }
+      if(kit.cantitate<=kit.stoc_min){
+        setTimeout(()=>alert('⚠ Stoc minim atins: '+kit.den+' ('+kit.cantitate.toFixed(2)+' kituri rămase)'),300);
+      }
+    }
+  }
+
+  closeModal('modal-eqa-rez');
+  renderEQA();
+  renderDashboard();
+}
+
+// Close EQA dropdown when click outside
+document.addEventListener('click', e=>{
+  const dd=document.getElementById('eqa-prog-srv-dropdown');
+  if(dd&&!dd.contains(e.target)&&e.target.id!=='eqa-prog-srv-search'){
+    dd.style.display='none';
+  }
+});
+
+// Populate EQA kit select when modal opens
+const _origShowModal = showModal;
+function showModal(id){
+  _origShowModal(id);
+  if(id==='modal-eqa-prog') populateEQAKitSelect();
+}
 
 
 // ─── INIT
