@@ -301,52 +301,118 @@ tr:hover td{background:var(--gray-50)}
   <div class="page-header">
     <div>
       <div class="page-title">Documente SMC</div>
-      <div class="page-subtitle">Toate documentele Sistemului de Management al Calității</div>
+      <div class="page-subtitle">Sistem de Management al Calității — ISO 15189:2023 · 5 niveluri ierarhice</div>
     </div>
-    <button class="btn btn-primary" onclick="showModal('modal-adddoc')">+ Adaugă document</button>
   </div>
 
-  <div class="search-bar">
-    <input type="text" id="doc-search" placeholder="Caută cod, titlu..." oninput="filterDocs()">
-    <select id="doc-filter-tip" onchange="filterDocs()">
-      <option value="">Toate tipurile</option>
-      <option value="MAN">MAN – Manual</option>
-      <option value="PG">PG – Procedură Generală</option>
-      <option value="PS">PS – Procedură Specifică</option>
-      <option value="IL">IL – Instrucțiune Lucru</option>
-      <option value="F">F – Formular</option>
-      <option value="REG">REG – Registru</option>
-    </select>
-    <select id="doc-filter-status" onchange="filterDocs()">
-      <option value="">Toate statusurile</option>
-      <option value="existent">Existent</option>
-      <option value="prioritar">Prioritar</option>
-      <option value="elaborare">În elaborare</option>
-      <option value="lipsa">Lipsă</option>
-    </select>
-    <button class="btn btn-outline" onclick="resetDocFilters()">&#8635; Reset</button>
+  <!-- NIVEL BUTTONS -->
+  <div id="doc-nivel-tabs" style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:24px">
+    <button class="doc-nivel-btn active" onclick="switchDocNivel(1)" id="dniv-1"
+      style="display:flex;flex-direction:column;align-items:center;padding:14px 20px;border:2px solid #1a56db;border-radius:12px;background:#dbeafe;cursor:pointer;min-width:130px;transition:all .2s">
+      <span style="font-size:24px">📘</span>
+      <span style="font-size:11px;font-weight:700;color:#1a56db;margin-top:4px">NIVEL 1</span>
+      <span style="font-size:12px;font-weight:600;color:#1f2937">MAN</span>
+      <span style="font-size:10px;color:#6b7280">Manual + Standard</span>
+    </button>
+    <button class="doc-nivel-btn" onclick="switchDocNivel(2)" id="dniv-2"
+      style="display:flex;flex-direction:column;align-items:center;padding:14px 20px;border:2px solid #e5e7eb;border-radius:12px;background:#f9fafb;cursor:pointer;min-width:130px;transition:all .2s">
+      <span style="font-size:24px">📗</span>
+      <span style="font-size:11px;font-weight:700;color:#374151;margin-top:4px">NIVEL 2</span>
+      <span style="font-size:12px;font-weight:600;color:#1f2937">PG</span>
+      <span style="font-size:10px;color:#6b7280">Proceduri Generale</span>
+    </button>
+    <button class="doc-nivel-btn" onclick="switchDocNivel(3)" id="dniv-3"
+      style="display:flex;flex-direction:column;align-items:center;padding:14px 20px;border:2px solid #e5e7eb;border-radius:12px;background:#f9fafb;cursor:pointer;min-width:130px;transition:all .2s">
+      <span style="font-size:24px">📙</span>
+      <span style="font-size:11px;font-weight:700;color:#374151;margin-top:4px">NIVEL 3</span>
+      <span style="font-size:12px;font-weight:600;color:#1f2937">PS</span>
+      <span style="font-size:10px;color:#6b7280">Proceduri Specifice</span>
+    </button>
+    <button class="doc-nivel-btn" onclick="switchDocNivel(4)" id="dniv-4"
+      style="display:flex;flex-direction:column;align-items:center;padding:14px 20px;border:2px solid #e5e7eb;border-radius:12px;background:#f9fafb;cursor:pointer;min-width:130px;transition:all .2s">
+      <span style="font-size:24px">📋</span>
+      <span style="font-size:11px;font-weight:700;color:#374151;margin-top:4px">NIVEL 4</span>
+      <span style="font-size:12px;font-weight:600;color:#1f2937">F / REG</span>
+      <span style="font-size:10px;color:#6b7280">Formulare & Registre</span>
+    </button>
+    <button class="doc-nivel-btn" onclick="switchDocNivel(5)" id="dniv-5"
+      style="display:flex;flex-direction:column;align-items:center;padding:14px 20px;border:2px solid #e5e7eb;border-radius:12px;background:#f9fafb;cursor:pointer;min-width:130px;transition:all .2s">
+      <span style="font-size:24px">📦</span>
+      <span style="font-size:11px;font-weight:700;color:#374151;margin-top:4px">NIVEL 5</span>
+      <span style="font-size:12px;font-weight:600;color:#1f2937">AH / EXT</span>
+      <span style="font-size:10px;color:#6b7280">Documente Externe</span>
+    </button>
   </div>
 
-  <div class="table-wrap">
-    <table>
-      <thead>
-        <tr>
-          <th style="width:160px">Cod document</th>
-          <th>Titlu</th>
-          <th style="width:60px">Tip</th>
-          <th style="width:90px">Ed./Rev.</th>
-          <th style="width:110px">Data vigoare</th>
-          <th style="width:110px">Status</th>
-          <th style="width:80px">Acțiuni</th>
-        </tr>
-      </thead>
-      <tbody id="doc-tbody"></tbody>
-    </table>
+  <!-- NIVEL 1: MAN -->
+  <div id="doc-nivel-1" class="doc-nivel-content">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px">
+      <div style="font-size:14px;font-weight:600;color:#1a56db">📘 Nivel 1 — Manual Calității & Standard</div>
+      <button class="btn btn-primary" onclick="openAddDocNivel(1)">+ Adaugă document</button>
+    </div>
+    <div id="doc-nivel-1-body"></div>
   </div>
-  <div id="doc-count" style="font-size:12px;color:var(--gray-400);padding:8px 0"></div>
+
+  <!-- NIVEL 2: PG -->
+  <div id="doc-nivel-2" class="doc-nivel-content" style="display:none">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px">
+      <div style="font-size:14px;font-weight:600;color:#059669">📗 Nivel 2 — Proceduri Generale</div>
+      <button class="btn btn-primary" onclick="openAddDocNivel(2)">+ Adaugă PG</button>
+    </div>
+    <div id="doc-nivel-2-body"></div>
+  </div>
+
+  <!-- NIVEL 3: PS cu grupe -->
+  <div id="doc-nivel-3" class="doc-nivel-content" style="display:none">
+    <div style="font-size:14px;font-weight:600;color:#d97706;margin-bottom:16px">📙 Nivel 3 — Proceduri Specifice pe grupe</div>
+    <div id="doc-nivel-3-grupe" style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:20px"></div>
+    <div id="doc-nivel-3-body"></div>
+  </div>
+
+  <!-- NIVEL 4: Formulare -->
+  <div id="doc-nivel-4" class="doc-nivel-content" style="display:none">
+    <div style="font-size:14px;font-weight:600;color:#7c3aed;margin-bottom:16px">📋 Nivel 4 — Formulare & Registre digitale</div>
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px;margin-bottom:24px">
+      <button class="card" onclick="switchFormular('deseuri')" style="text-align:left;cursor:pointer;border-left:4px solid #ef4444;padding:16px">
+        <div style="font-size:20px;margin-bottom:6px">🗑️</div>
+        <div style="font-weight:600;font-size:14px">Predare Deșeuri Biologice</div>
+        <div style="font-size:11px;color:#6b7280">Cod 18.01.03 · Raport lunar</div>
+      </button>
+      <button class="card" onclick="switchFormular('echipamente')" style="text-align:left;cursor:pointer;border-left:4px solid #3b82f6;padding:16px">
+        <div style="font-size:20px;margin-bottom:6px">🔬</div>
+        <div style="font-weight:600;font-size:14px">Verificare Zilnică Echipamente</div>
+        <div style="font-size:11px;color:#6b7280">Inspecție vizuală + observații</div>
+      </button>
+      <button class="card" onclick="switchFormular('receptie')" style="text-align:left;cursor:pointer;border-left:4px solid #10b981;padding:16px">
+        <div style="font-size:20px;margin-bottom:6px">📥</div>
+        <div style="font-weight:600;font-size:14px">Recepție Probe</div>
+        <div style="font-size:11px;color:#6b7280">Checklist recepție + conformitate</div>
+      </button>
+      <button class="card" onclick="switchFormular('biosiguranta')" style="text-align:left;cursor:pointer;border-left:4px solid #f59e0b;padding:16px">
+        <div style="font-size:20px;margin-bottom:6px">🦺</div>
+        <div style="font-weight:600;font-size:14px">Biosiguranță</div>
+        <div style="font-size:11px;color:#6b7280">EIP · Instruire · Incidente</div>
+      </button>
+    </div>
+    <div id="doc-nivel-4-body"></div>
+  </div>
+
+  <!-- NIVEL 5: Externe -->
+  <div id="doc-nivel-5" class="doc-nivel-content" style="display:none">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px">
+      <div style="font-size:14px;font-weight:600;color:#6b7280">📦 Nivel 5 — Documente Externe & Suport</div>
+      <button class="btn btn-primary" onclick="openAddDocNivel(5)">+ Adaugă document</button>
+    </div>
+    <div style="margin-bottom:16px">
+      <a href="https://blueconsole.ro" target="_blank" class="btn btn-outline" style="margin-right:8px">
+        🌡️ BlueConsole — Monitorizare Temperaturi
+      </a>
+    </div>
+    <div id="doc-nivel-5-body"></div>
+  </div>
 </section>
 
-<!-- ─── ECHIPAMENTE ────────────────────────────────────────── -->
+
 <section id="page-echipamente" class="page">
   <div class="page-header">
     <div>
@@ -1111,12 +1177,15 @@ tr:hover td{background:var(--gray-50)}
   </div>
 </div>
 
+
+<!-- ═══ MODAL ADAUGARE DOCUMENT (nivel-aware) ══════════════ -->
 <div class="modal-bg" id="modal-adddoc" onclick="if(event.target===this)closeModal('modal-adddoc')">
-  <div class="modal">
-    <h3>Adaugă document nou</h3>
+  <div class="modal" style="max-width:500px">
+    <h3 id="modal-adddoc-title">Adaugă document</h3>
+    <input type="hidden" id="new-doc-nivel">
     <div class="form-group" style="margin-bottom:12px">
       <label>Cod document</label>
-      <input type="text" id="new-doc-cod" placeholder="ex. PS-BM-ITU-002">
+      <input type="text" id="new-doc-cod" placeholder="ex. PG-4.1 sau PS-BM-ITU-001">
     </div>
     <div class="form-group" style="margin-bottom:12px">
       <label>Titlu document</label>
@@ -1129,6 +1198,7 @@ tr:hover td{background:var(--gray-50)}
           <option value="MAN">MAN</option><option value="PG">PG</option>
           <option value="PS" selected>PS</option><option value="IL">IL</option>
           <option value="F">F</option><option value="REG">REG</option>
+          <option value="EXT">EXT</option>
         </select>
       </div>
       <div class="form-group">
@@ -1136,13 +1206,14 @@ tr:hover td{background:var(--gray-50)}
         <select id="new-doc-status">
           <option value="elaborare">În elaborare</option>
           <option value="prioritar">Prioritar</option>
+          <option value="existent">Existent</option>
           <option value="lipsa">Lipsă</option>
         </select>
       </div>
     </div>
     <div class="form-row">
       <div class="form-group">
-        <label>Grupă (opțional)</label>
+        <label>Grupă (PS)</label>
         <select id="new-doc-grupa">
           <option value="">General</option>
           <option value="IST">IST</option><option value="TOR">TOR</option>
@@ -1151,7 +1222,7 @@ tr:hover td{background:var(--gray-50)}
         </select>
       </div>
       <div class="form-group">
-        <label>Responsabil elaborare</label>
+        <label>Responsabil</label>
         <select id="new-doc-resp">
           <option value="">— selectați —</option>
           <option value="Rotari Ion">Rotari Ion</option>
@@ -1168,6 +1239,236 @@ tr:hover td{background:var(--gray-50)}
     </div>
   </div>
 </div>
+
+<!-- ═══ MODAL DEȘEURI BIOLOGICE ════════════════════════════ -->
+<div class="modal-bg" id="modal-deseuri-add" onclick="if(event.target===this)closeModal('modal-deseuri-add')">
+  <div class="modal" style="max-width:460px">
+    <h3>🗑️ Predare Deșeuri Biologice</h3>
+    <div class="form-row">
+      <div class="form-group">
+        <label>Data predării</label>
+        <input type="date" id="des-data">
+      </div>
+      <div class="form-group">
+        <label>Ora</label>
+        <input type="time" id="des-ora">
+      </div>
+    </div>
+    <div class="form-row">
+      <div class="form-group">
+        <label>Secția</label>
+        <input type="text" id="des-sectia" value="Biologie Moleculară" readonly
+          style="background:var(--gray-50);color:var(--gray-500)">
+      </div>
+      <div class="form-group">
+        <label>Cod deșeu</label>
+        <input type="text" id="des-cod" value="18.01.03" readonly
+          style="background:var(--gray-50);font-family:monospace;color:var(--gray-500)">
+      </div>
+    </div>
+    <div class="form-group" style="margin-bottom:12px">
+      <label>Cantitate (kg)</label>
+      <input type="number" id="des-cantitate" step="0.1" min="0.1" placeholder="ex. 2.5">
+    </div>
+    <div class="form-group" style="margin-bottom:4px">
+      <label>Responsabil</label>
+      <input type="text" id="des-responsabil" readonly
+        style="background:var(--gray-50);color:var(--gray-600)">
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-outline" onclick="closeModal('modal-deseuri-add')">Anulare</button>
+      <button class="btn btn-primary" onclick="saveDeseu()">Înregistrează</button>
+    </div>
+  </div>
+</div>
+
+<!-- ═══ MODAL VERIFICARE ECHIPAMENTE ═══════════════════════ -->
+<div class="modal-bg" id="modal-verif-ech" onclick="if(event.target===this)closeModal('modal-verif-ech')">
+  <div class="modal" style="max-width:540px;max-height:85vh;overflow-y:auto">
+    <h3>🔬 Verificare Zilnică Echipamente</h3>
+    <div style="font-size:12px;color:var(--gray-500);margin-bottom:16px">
+      Data: <strong id="verif-ech-data-display"></strong> · Operator: <strong id="verif-ech-operator"></strong>
+    </div>
+    <div id="verif-ech-lista"></div>
+    <div class="form-group" style="margin-top:12px">
+      <label>Observații generale</label>
+      <textarea id="verif-ech-obs" rows="2"
+        style="width:100%;padding:8px;border:1px solid var(--gray-200);border-radius:var(--radius);font-family:var(--font);font-size:13px;resize:vertical"
+        placeholder="Opțional — observații generale sesiune"></textarea>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-outline" onclick="closeModal('modal-verif-ech')">Anulare</button>
+      <button class="btn btn-primary" onclick="saveVerifEch()">Salvează verificarea</button>
+    </div>
+  </div>
+</div>
+
+<!-- ═══ MODAL RECEPȚIE PROBE ════════════════════════════════ -->
+<div class="modal-bg" id="modal-receptie" onclick="if(event.target===this)closeModal('modal-receptie')">
+  <div class="modal" style="max-width:500px">
+    <h3>📥 Checklist Recepție Probe</h3>
+    <div class="form-row">
+      <div class="form-group">
+        <label>Data recepției</label>
+        <input type="date" id="rec-data">
+      </div>
+      <div class="form-group">
+        <label>Ora recepției</label>
+        <input type="time" id="rec-ora">
+      </div>
+    </div>
+    <div class="form-group" style="margin-bottom:12px">
+      <label>Nr. probe recepționate</label>
+      <input type="number" id="rec-nr-probe" min="1" placeholder="ex. 15">
+    </div>
+    <div style="font-size:13px;font-weight:600;color:var(--gray-700);margin-bottom:10px">Verificări la recepție:</div>
+    <div style="display:flex;flex-direction:column;gap:8px;margin-bottom:16px">
+      <label style="display:flex;align-items:center;gap:10px;cursor:pointer;padding:8px;background:var(--gray-50);border-radius:var(--radius)">
+        <input type="checkbox" id="rec-c1" style="width:16px;height:16px">
+        <span style="font-size:13px">Tuburile sunt corect etichetate și identificabile</span>
+      </label>
+      <label style="display:flex;align-items:center;gap:10px;cursor:pointer;padding:8px;background:var(--gray-50);border-radius:var(--radius)">
+        <input type="checkbox" id="rec-c2" style="width:16px;height:16px">
+        <span style="font-size:13px">Volumul de probă este suficient</span>
+      </label>
+      <label style="display:flex;align-items:center;gap:10px;cursor:pointer;padding:8px;background:var(--gray-50);border-radius:var(--radius)">
+        <input type="checkbox" id="rec-c3" style="width:16px;height:16px">
+        <span style="font-size:13px">Nu există probe hemolizate/lipemice/contaminate</span>
+      </label>
+      <label style="display:flex;align-items:center;gap:10px;cursor:pointer;padding:8px;background:var(--gray-50);border-radius:var(--radius)">
+        <input type="checkbox" id="rec-c4" style="width:16px;height:16px">
+        <span style="font-size:13px">Temperatura de transport conformă</span>
+      </label>
+      <label style="display:flex;align-items:center;gap:10px;cursor:pointer;padding:8px;background:var(--gray-50);border-radius:var(--radius)">
+        <input type="checkbox" id="rec-c5" style="width:16px;height:16px">
+        <span style="font-size:13px">Cererea de analiză completă și corectă</span>
+      </label>
+      <label style="display:flex;align-items:center;gap:10px;cursor:pointer;padding:8px;background:var(--gray-50);border-radius:var(--radius)">
+        <input type="checkbox" id="rec-c6" style="width:16px;height:16px">
+        <span style="font-size:13px">Probe neconforme respinse și notificate</span>
+      </label>
+    </div>
+    <div class="form-group" style="margin-bottom:4px">
+      <label>Observații</label>
+      <textarea id="rec-obs" rows="2"
+        style="width:100%;padding:8px;border:1px solid var(--gray-200);border-radius:var(--radius);font-family:var(--font);font-size:13px;resize:vertical"
+        placeholder="Probe neconforme, observații speciale..."></textarea>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-outline" onclick="closeModal('modal-receptie')">Anulare</button>
+      <button class="btn btn-primary" onclick="saveReceptie()">Salvează</button>
+    </div>
+  </div>
+</div>
+
+<!-- ═══ MODAL BIOSIGURANȚĂ ══════════════════════════════════ -->
+<div class="modal-bg" id="modal-biosig" onclick="if(event.target===this)closeModal('modal-biosig')">
+  <div class="modal" style="max-width:500px">
+    <h3>🦺 Înregistrare Biosiguranță</h3>
+    <div class="form-row">
+      <div class="form-group">
+        <label>Tip înregistrare</label>
+        <select id="biosig-tip" onchange="onBiosigTipChange()">
+          <option value="eip">Distribuire EIP</option>
+          <option value="instruire">Instruire biosiguranță</option>
+          <option value="incident">Incident biosiguranță</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label>Data</label>
+        <input type="date" id="biosig-data">
+      </div>
+    </div>
+    <div id="biosig-eip-fields">
+      <div class="form-group" style="margin-bottom:12px">
+        <label>Personal beneficiar</label>
+        <select id="biosig-personal">
+          <option value="toti">Tot personalul</option>
+          <option value="Rotari Ion">Rotari Ion</option>
+          <option value="Croitoru Tatiana">Croitoru Tatiana</option>
+          <option value="Jentimir Valeria">Jentimir Valeria</option>
+          <option value="Andrian Maria">Andrian Maria</option>
+          <option value="Antropov Marina">Antropov Marina</option>
+        </select>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:6px;margin-bottom:12px">
+        <div style="font-size:13px;font-weight:600;color:var(--gray-700)">EIP distribuit:</div>
+        <label style="display:flex;align-items:center;gap:8px;cursor:pointer">
+          <input type="checkbox" id="biosig-halat" style="width:15px;height:15px">
+          <span style="font-size:13px">Halat de protecție</span>
+        </label>
+        <label style="display:flex;align-items:center;gap:8px;cursor:pointer">
+          <input type="checkbox" id="biosig-manusi" style="width:15px;height:15px">
+          <span style="font-size:13px">Mănuși de protecție</span>
+        </label>
+        <label style="display:flex;align-items:center;gap:8px;cursor:pointer">
+          <input type="checkbox" id="biosig-masca" style="width:15px;height:15px">
+          <span style="font-size:13px">Mască de protecție</span>
+        </label>
+        <label style="display:flex;align-items:center;gap:8px;cursor:pointer">
+          <input type="checkbox" id="biosig-ochelari" style="width:15px;height:15px">
+          <span style="font-size:13px">Ochelari de protecție</span>
+        </label>
+      </div>
+    </div>
+    <div id="biosig-incident-fields" style="display:none">
+      <div class="form-group" style="margin-bottom:12px">
+        <label>Tip incident</label>
+        <select id="biosig-incident-tip">
+          <option value="intepatura">Înțepătură ac</option>
+          <option value="varsare">Vărsare substanță biologică</option>
+          <option value="taietura">Tăietură</option>
+          <option value="altul">Altul</option>
+        </select>
+      </div>
+      <div class="form-group" style="margin-bottom:12px">
+        <label>Persoana implicată</label>
+        <select id="biosig-incident-pers">
+          <option value="Rotari Ion">Rotari Ion</option>
+          <option value="Croitoru Tatiana">Croitoru Tatiana</option>
+          <option value="Jentimir Valeria">Jentimir Valeria</option>
+          <option value="Andrian Maria">Andrian Maria</option>
+          <option value="Antropov Marina">Antropov Marina</option>
+        </select>
+      </div>
+      <div class="form-group" style="margin-bottom:4px">
+        <label>Măsuri luate</label>
+        <textarea id="biosig-masuri" rows="2"
+          style="width:100%;padding:8px;border:1px solid var(--gray-200);border-radius:var(--radius);font-family:var(--font);font-size:13px;resize:vertical"
+          placeholder="Descrieți măsurile de prim ajutor și cele ulterioare"></textarea>
+      </div>
+    </div>
+    <div class="form-group" style="margin-bottom:4px">
+      <label>Observații</label>
+      <textarea id="biosig-obs" rows="2"
+        style="width:100%;padding:8px;border:1px solid var(--gray-200);border-radius:var(--radius);font-family:var(--font);font-size:13px;resize:vertical"
+        placeholder="Opțional"></textarea>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-outline" onclick="closeModal('modal-biosig')">Anulare</button>
+      <button class="btn btn-primary" onclick="saveBiosig()">Salvează</button>
+    </div>
+  </div>
+</div>
+
+<!-- ═══ MODAL RAPORT DEȘEURI ════════════════════════════════ -->
+<div class="modal-bg" id="modal-rap-deseuri" onclick="if(event.target===this)closeModal('modal-rap-deseuri')">
+  <div class="modal" style="max-width:600px;max-height:85vh;overflow-y:auto">
+    <h3>📊 Raport Lunar Deșeuri Biologice</h3>
+    <div style="display:flex;gap:8px;margin-bottom:16px;align-items:center">
+      <select id="rap-des-luna" style="padding:6px 10px;border:1px solid var(--gray-200);border-radius:var(--radius);font-size:13px">
+        <option value="">— selectați luna —</option>
+      </select>
+      <button class="btn btn-primary" onclick="genRaportDeseuri()">Generează</button>
+      <button class="btn btn-outline" onclick="printRaportDeseuri()">🖨️ Print</button>
+    </div>
+    <div id="rap-deseuri-body"></div>
+    <div class="modal-footer">
+      <button class="btn btn-outline" onclick="closeModal('modal-rap-deseuri')">Închide</button>
+    </div>
+  </div>
+</div>
+
 
 <!-- ═══ MODAL IQC ADD ════════════════════════════════════════ -->
 <div class="modal-bg" id="modal-iqc-add" onclick="if(event.target===this)closeModal('modal-iqc-add')">
@@ -2476,43 +2777,14 @@ function selectUser(id){
 }
 
 // ─── DOCUMENTE ────────────────────────────────────────────────
-function renderDocs(filter){
-  const q=(document.getElementById('doc-search')||{}).value||'';
-  const tip=(document.getElementById('doc-filter-tip')||{}).value||'';
-  const status=(document.getElementById('doc-filter-status')||{}).value||'';
-  let list=DOCS;
-  if(q) list=list.filter(d=>d.cod.toLowerCase().includes(q.toLowerCase())||d.titlu.toLowerCase().includes(q.toLowerCase()));
-  if(tip) list=list.filter(d=>d.tip===tip);
-  if(status) list=list.filter(d=>d.status===status);
-  const tbody=document.getElementById('doc-tbody');
-  if(!tbody) return;
-  tbody.innerHTML=list.map(d=>`
-    <tr>
-      <td><span style="font-family:monospace;font-size:12px;font-weight:600;color:var(--blue-dark)">${d.cod}</span></td>
-      <td>${d.titlu}</td>
-      <td><span class="badge" style="background:var(--blue-light);color:var(--blue-dark)">${d.tip}</span></td>
-      <td style="font-size:12px;color:var(--gray-600)">Ed.${d.editie} / Rev.${d.revizie}</td>
-      <td style="font-size:12px;color:var(--gray-500)">${d.data_vigoare||'—'}</td>
-      <td><span class="badge badge-${d.status}">${statusLabel(d.status)}</span></td>
-      <td style="white-space:nowrap">
-        <button class="btn btn-outline" style="padding:3px 8px;font-size:12px" onclick="openDocAttach('${d.id}')" title="Atașează / vizualizează PDF">
-          📎${(DOC_FILES[d.id]||[]).length>0?' <span style=\"background:var(--blue);color:#fff;border-radius:8px;padding:0 5px;font-size:10px\">'+(DOC_FILES[d.id]||[]).length+'</span>':''}
-        </button>
-        <button class="btn btn-outline" style="padding:3px 8px;font-size:12px;margin-left:3px" onclick="deleteDoc('${d.id}')" title="Șterge">&#128465;</button>
-      </td>
-    </tr>`).join('');
-  const cnt=document.getElementById('doc-count');
-  if(cnt) cnt.textContent=`${list.length} documente afișate din ${DOCS.length} total`;
-}
+// renderDocs: see new doc module
+
 
 function statusLabel(s){return{existent:'Existent',prioritar:'Prioritar',elaborare:'În elaborare',lipsa:'Lipsă'}[s]||s}
-function filterDocs(){renderDocs()}
-function resetDocFilters(){
-  document.getElementById('doc-search').value='';
-  document.getElementById('doc-filter-tip').value='';
-  document.getElementById('doc-filter-status').value='';
-  renderDocs();
-}
+// filterDocs: see new doc module
+
+// resetDocFilters: see new doc module
+
 function filterByGrupa(cod){showPage('documente');setTimeout(()=>{document.getElementById('doc-search').value=cod;renderDocs();},50)}
 function openDoc(fisier){alert('Deschide fișier: '+fisier+'\n\nPentru a funcționa, copiați fișierele PDF/DOCX în folderul aplicației și actualizați calea.')}
 function deleteDoc(id){
@@ -2522,29 +2794,8 @@ function deleteDoc(id){
     saveDocs();renderDocs();renderDashboard();
   }
 }
-function addDoc(){
-  const cod=document.getElementById('new-doc-cod').value.trim();
-  const titlu=document.getElementById('new-doc-titlu').value.trim();
-  const tip=document.getElementById('new-doc-tip').value;
-  const status=document.getElementById('new-doc-status').value;
-  if(!cod||!titlu){alert('Completati codul si titlul documentului!');return;}
-  if(DOCS.find(function(d){return d.cod===cod;})){alert('Codul '+cod+' exista deja!');return;}
-  const grupaEl=document.getElementById('new-doc-grupa');
-  const respEl=document.getElementById('new-doc-resp');
-  DOCS.push({
-    id:cod,cod:cod,titlu:titlu,tip:tip,
-    grupa:grupaEl?grupaEl.value:'',
-    responsabil:respEl?respEl.value:'',
-    editie:1,revizie:1,data_vigoare:'',status:status
-  });
-  saveDocs();
-  if(typeof upsertRecord==='function') upsertRecord('docs', DOCS[DOCS.length-1]).catch(e=>{});
-  renderDocs();
-  closeModal('modal-adddoc');
-  document.getElementById('new-doc-cod').value='';
-  document.getElementById('new-doc-titlu').value='';
-  renderDashboard();
-}
+// addDoc: see new doc module
+
 function saveDocs(){localStorage.setItem('smc_docs',JSON.stringify(DOCS))}
 
 // ─── ECHIPAMENTE ──────────────────────────────────────────────
@@ -5449,7 +5700,7 @@ function showPage(id){
   if(pg) pg.classList.add('active');
   const nb=document.getElementById('nav-'+id);
   if(nb) nb.classList.add('active');
-  if(id==='documente'){renderDocs();addAttachButtons();}
+  if(id==='documente'){currentDocNivel=1;switchDocNivel(1);}
   if(id==='echipamente') renderEch();
   if(id==='personal') renderPersonal();
   if(id==='iqc'){initFormDates();populateOperators();populateLotSelector();renderIQC();setTimeout(renderLJ,100);}
@@ -6018,8 +6269,666 @@ function openEQAProgModal(){
   showModal('modal-eqa-prog');
 }
 
+
+// ════════════════════════════════════════════════════════════
+// DOCUMENTE SMC — RESTRUCTURAT PE 5 NIVELURI
+// ════════════════════════════════════════════════════════════
+
+let DESEURI_DATA = loadData('smc_deseuri', []);
+let VERIF_ECH_DATA = loadData('smc_verif_ech', []);
+let RECEPTIE_DATA = loadData('smc_receptie', []);
+let BIOSIG_DATA = loadData('smc_biosig', []);
+
+let currentDocNivel = 1;
+let currentPSGrupa = 'IST';
+let currentFormular = null;
+
+// ─── NIVEL NAVIGATION ─────────────────────────────────────────
+function switchDocNivel(nivel) {
+  currentDocNivel = nivel;
+  // Update button styles
+  for(let i=1;i<=5;i++){
+    const btn = document.getElementById('dniv-'+i);
+    if(!btn) continue;
+    if(i===nivel){
+      btn.style.borderColor='#1a56db';
+      btn.style.background='#dbeafe';
+    } else {
+      btn.style.borderColor='#e5e7eb';
+      btn.style.background='#f9fafb';
+    }
+    // Show/hide content
+    const content = document.getElementById('doc-nivel-'+i);
+    if(content) content.style.display = i===nivel ? 'block' : 'none';
+  }
+  renderDocNivel(nivel);
+}
+
+function renderDocNivel(nivel) {
+  if(nivel===1) renderDocNivel1();
+  else if(nivel===2) renderDocNivel2();
+  else if(nivel===3) renderDocNivel3();
+  else if(nivel===4) renderDocNivel4();
+  else if(nivel===5) renderDocNivel5();
+}
+
+// ─── NIVEL 1: MAN ─────────────────────────────────────────────
+function renderDocNivel1() {
+  const docs = DOCS.filter(d=>d.tip==='MAN'||(!d.tip&&!d.nivel)||d.nivel===1);
+  const el = document.getElementById('doc-nivel-1-body');
+  if(!el) return;
+  el.innerHTML = renderDocTable(docs, 1);
+}
+
+// ─── NIVEL 2: PG ──────────────────────────────────────────────
+function renderDocNivel2() {
+  const docs = DOCS.filter(d=>d.tip==='PG'||d.nivel===2);
+  const el = document.getElementById('doc-nivel-2-body');
+  if(!el) return;
+  el.innerHTML = renderDocTable(docs, 2);
+}
+
+// ─── NIVEL 3: PS per grupă ────────────────────────────────────
+function renderDocNivel3() {
+  const grupe = [
+    {cod:'IST', den:'Infecții sexual-transmisibile', col:'#29AAE1'},
+    {cod:'TOR', den:'Infecții TORCH', col:'#1a7aad'},
+    {cod:'HEP', den:'Hepatite virale', col:'#70AD47'},
+    {cod:'IRP', den:'Infecții respiratorii', col:'#ED7D31'},
+    {cod:'IGI', den:'Infecții gastrointestinale', col:'#9E480E'},
+    {cod:'GEN', den:'Genetică', col:'#7030A0'}
+  ];
+
+  const grupeEl = document.getElementById('doc-nivel-3-grupe');
+  if(grupeEl) {
+    grupeEl.innerHTML = grupe.map(g=>{
+      const count = DOCS.filter(d=>(d.tip==='PS'||d.nivel===3)&&d.grupa===g.cod).length;
+      const active = g.cod===currentPSGrupa;
+      return `<button onclick="switchPSGrupa('${g.cod}')"
+        style="padding:10px 16px;border:2px solid ${active?g.col:'#e5e7eb'};border-radius:10px;
+               background:${active?g.col+'20':'#f9fafb'};cursor:pointer;font-size:13px;font-weight:600;
+               color:${active?g.col:'#374151'};transition:all .2s;min-width:100px">
+        <div>${g.cod}</div>
+        <div style="font-size:10px;color:${active?g.col:'#6b7280'};font-weight:400">${count} doc.</div>
+      </button>`;
+    }).join('');
+  }
+
+  const docs = DOCS.filter(d=>(d.tip==='PS'||d.nivel===3)&&d.grupa===currentPSGrupa);
+  
+  // Get all services for this grupa to show placeholders
+  const srvForGrupa = SERVICII.filter(s=>s.grupa===currentPSGrupa&&s.activ!==false);
+  
+  const el = document.getElementById('doc-nivel-3-body');
+  if(!el) return;
+
+  // Build combined list: existing PS docs + services without PS
+  let rows = '';
+  
+  // Existing PS docs
+  docs.forEach(d=>{
+    rows += renderDocRow(d);
+  });
+  
+  // Services without PS document
+  srvForGrupa.forEach(srv=>{
+    const hasPS = docs.find(d=>d.cod===srv.ps||(d.titlu&&d.titlu.toLowerCase().includes(srv.cod.toLowerCase())));
+    if(!hasPS){
+      rows += `<tr style="background:#fff5f5">
+        <td><span style="font-family:monospace;font-size:11px;color:var(--gray-400)">${srv.ps||'—'}</span></td>
+        <td style="font-size:12px;color:var(--gray-500)">${srv.den} <span style="font-size:10px;color:var(--gray-400)">[${srv.cod}]</span></td>
+        <td><span class="badge badge-lipsa" style="font-size:10px">PS</span></td>
+        <td colspan="2" style="font-size:11px;color:var(--gray-400)">—</td>
+        <td><span class="badge badge-lipsa" style="font-size:11px">Procedură neelaborată</span></td>
+        <td>
+          <button class="btn btn-outline" style="padding:3px 8px;font-size:11px" 
+            onclick="openAddDocNivel(3,'${srv.grupa}','${srv.ps||''}','${srv.den}')">+ Adaugă PS</button>
+        </td>
+      </tr>`;
+    }
+  });
+
+  el.innerHTML = `<div class="table-wrap"><table>
+    <thead><tr>
+      <th style="width:140px">Cod</th><th>Titlu</th><th style="width:50px">Tip</th>
+      <th style="width:80px">Ed./Rev.</th><th style="width:100px">Dată vigoare</th>
+      <th style="width:110px">Status</th><th style="width:100px">Acțiuni</th>
+    </tr></thead>
+    <tbody>${rows || '<tr><td colspan="7" style="text-align:center;padding:20px;color:var(--gray-400)">Niciun document PS pentru grupa '+currentPSGrupa+'</td></tr>'}</tbody>
+  </table></div>
+  <button class="btn btn-primary" style="margin-top:12px" onclick="openAddDocNivel(3,'${currentPSGrupa}')">+ Adaugă PS pentru ${currentPSGrupa}</button>`;
+}
+
+function switchPSGrupa(grupa) {
+  currentPSGrupa = grupa;
+  renderDocNivel3();
+}
+
+// ─── NIVEL 4: Formulare ───────────────────────────────────────
+function renderDocNivel4() {
+  // If a formular is selected, render it
+  if(currentFormular) renderFormular(currentFormular);
+}
+
+function switchFormular(tip) {
+  currentFormular = tip;
+  renderFormular(tip);
+}
+
+function renderFormular(tip) {
+  const el = document.getElementById('doc-nivel-4-body');
+  if(!el) return;
+
+  if(tip==='deseuri') renderDeseuriBody(el);
+  else if(tip==='echipamente') renderVerifEchBody(el);
+  else if(tip==='receptie') renderReceptieBody(el);
+  else if(tip==='biosiguranta') renderBiosigBody(el);
+}
+
+// ─── NIVEL 5: Externe ─────────────────────────────────────────
+function renderDocNivel5() {
+  const docs = DOCS.filter(d=>d.tip==='EXT'||d.nivel===5);
+  const el = document.getElementById('doc-nivel-5-body');
+  if(!el) return;
+  el.innerHTML = renderDocTable(docs, 5);
+}
+
+// ─── SHARED DOC TABLE ─────────────────────────────────────────
+function renderDocTable(docs, nivel) {
+  if(!docs.length) return `<div style="text-align:center;padding:32px;color:var(--gray-400)">
+    Niciun document. <button class="btn btn-outline" style="margin-left:8px" onclick="openAddDocNivel(${nivel})">+ Adaugă primul document</button>
+  </div>`;
+  return `<div class="table-wrap"><table>
+    <thead><tr>
+      <th style="width:140px">Cod</th><th>Titlu</th><th style="width:50px">Tip</th>
+      <th style="width:80px">Ed./Rev.</th><th style="width:100px">Dată vigoare</th>
+      <th style="width:110px">Status</th><th style="width:100px">Acțiuni</th>
+    </tr></thead>
+    <tbody>${docs.map(d=>renderDocRow(d)).join('')}</tbody>
+  </table></div>`;
+}
+
+function renderDocRow(d) {
+  const files = DOC_FILES[d.id]||[];
+  return `<tr>
+    <td><span style="font-family:monospace;font-size:12px;font-weight:600;color:var(--blue-dark)">${d.cod}</span></td>
+    <td style="font-size:13px">${d.titlu}</td>
+    <td><span class="badge" style="background:var(--blue-light);color:var(--blue-dark);font-size:10px">${d.tip}</span></td>
+    <td style="font-size:12px;color:var(--gray-600)">Ed.${d.editie||1}/Rev.${d.revizie||1}</td>
+    <td style="font-size:12px;color:var(--gray-500)">${d.data_vigoare||'—'}</td>
+    <td><span class="badge badge-${d.status}">${statusLabel(d.status)}</span></td>
+    <td style="white-space:nowrap">
+      <button class="btn btn-outline" style="padding:3px 8px;font-size:12px" onclick="openDocAttach('${d.id}')" title="Atașamente PDF">
+        📎${files.length>0?'<span style="background:var(--blue);color:#fff;border-radius:8px;padding:0 5px;font-size:10px;margin-left:2px">'+files.length+'</span>':''}
+      </button>
+      <button class="btn btn-outline" style="padding:3px 7px;font-size:11px;margin-left:3px" onclick="deleteDoc('${d.id}')">🗑️</button>
+    </td>
+  </tr>`;
+}
+
+// ─── ADD DOC MODAL ────────────────────────────────────────────
+function openAddDocNivel(nivel, grupa, cod, titlu) {
+  document.getElementById('new-doc-nivel').value = nivel;
+  document.getElementById('new-doc-cod').value = cod||'';
+  document.getElementById('new-doc-titlu').value = titlu||'';
+  document.getElementById('new-doc-grupa').value = grupa||'';
+  const tipMap = {1:'MAN',2:'PG',3:'PS',4:'F',5:'EXT'};
+  document.getElementById('new-doc-tip').value = tipMap[nivel]||'PS';
+  document.getElementById('new-doc-status').value = 'elaborare';
+  const titleMap = {1:'Adaugă Manual / Standard',2:'Adaugă Procedură Generală',
+    3:'Adaugă Procedură Specifică',4:'Adaugă Formular',5:'Adaugă Document Extern'};
+  document.getElementById('modal-adddoc-title').textContent = titleMap[nivel]||'Adaugă document';
+  showModal('modal-adddoc');
+}
+
+function addDoc(){
+  const cod=document.getElementById('new-doc-cod').value.trim();
+  const titlu=document.getElementById('new-doc-titlu').value.trim();
+  if(!cod||!titlu){alert('Introduceți codul și titlul!');return;}
+  if(DOCS.find(function(d){return d.cod===cod;})){alert('Codul '+cod+' există deja!');return;}
+  const nivel=parseInt(document.getElementById('new-doc-nivel').value)||1;
+  const rec={
+    id:cod,cod:cod,titlu:titlu,
+    tip:document.getElementById('new-doc-tip').value,
+    nivel:nivel,
+    grupa:document.getElementById('new-doc-grupa').value||'',
+    responsabil:document.getElementById('new-doc-resp').value||'',
+    editie:1,revizie:1,data_vigoare:'',
+    status:document.getElementById('new-doc-status').value,
+    ts:new Date().toISOString()
+  };
+  DOCS.push(rec);
+  saveDocs();
+  if(typeof upsertRecord==='function') upsertRecord('docs',rec).catch(e=>{});
+  closeModal('modal-adddoc');
+  document.getElementById('new-doc-cod').value='';
+  document.getElementById('new-doc-titlu').value='';
+  renderDocNivel(nivel);
+}
+
+// Override renderDocs to use new structure
+function renderDocs(){
+  renderDocNivel(currentDocNivel);
+}
+
+// ─── DEȘEURI BIOLOGICE ────────────────────────────────────────
+function renderDeseuriBody(el) {
+  const luni = [...new Set(DESEURI_DATA.map(d=>d.data.slice(0,7)))].sort().reverse();
+  el.innerHTML = `
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px">
+      <div style="font-size:14px;font-weight:600;color:#ef4444">🗑️ Registru Predare Deșeuri Biologice — Cod 18.01.03</div>
+      <div style="display:flex;gap:8px">
+        <button class="btn btn-outline" onclick="genRaportDeseuriModal()">📊 Raport lunar</button>
+        <button class="btn btn-primary" onclick="openDeseuriAdd()">+ Înregistrare nouă</button>
+      </div>
+    </div>
+    <div class="table-wrap">
+      <table>
+        <thead><tr>
+          <th style="width:100px">Data</th>
+          <th style="width:60px">Ora</th>
+          <th>Secția</th>
+          <th style="width:90px">Cod deșeu</th>
+          <th style="width:80px">Cantitate (kg)</th>
+          <th>Responsabil</th>
+          <th style="width:60px"></th>
+        </tr></thead>
+        <tbody>
+          ${DESEURI_DATA.length===0?'<tr><td colspan="7" style="text-align:center;padding:20px;color:var(--gray-400)">Nicio înregistrare. Adăugați prima predare de deșeuri.</td></tr>':
+          [...DESEURI_DATA].sort((a,b)=>b.ts.localeCompare(a.ts)).map(d=>`
+            <tr>
+              <td style="font-size:12px">${fmtDate(d.data)}</td>
+              <td style="font-size:12px;font-family:monospace">${d.ora||'—'}</td>
+              <td style="font-size:12px">${d.sectia}</td>
+              <td><span style="font-family:monospace;font-size:12px;font-weight:600;color:#ef4444">${d.cod}</span></td>
+              <td style="text-align:center;font-weight:700;font-size:14px">${d.cantitate} kg</td>
+              <td style="font-size:12px">${d.responsabil}</td>
+              <td><button class="btn btn-outline" style="padding:2px 7px;font-size:11px" onclick="deleteDeseu('${d.id}')">🗑️</button></td>
+            </tr>`).join('')}
+        </tbody>
+      </table>
+    </div>`;
+}
+
+function openDeseuriAdd() {
+  const now = new Date();
+  document.getElementById('des-data').value = todayStr();
+  document.getElementById('des-ora').value = now.toTimeString().slice(0,5);
+  document.getElementById('des-cantitate').value = '';
+  document.getElementById('des-responsabil').value = currentUser.nume||'';
+  showModal('modal-deseuri-add');
+}
+
+function saveDeseu() {
+  const cant = parseFloat(document.getElementById('des-cantitate').value);
+  if(!cant||cant<=0){alert('Introduceți cantitatea în kg!');return;}
+  const rec = {
+    id:'DES-'+Date.now(),
+    data:document.getElementById('des-data').value,
+    ora:document.getElementById('des-ora').value,
+    sectia:document.getElementById('des-sectia').value,
+    cod:document.getElementById('des-cod').value,
+    cantitate:cant,
+    responsabil:document.getElementById('des-responsabil').value||currentUser.nume,
+    operator_id:currentUser.id,
+    ts:new Date().toISOString()
+  };
+  DESEURI_DATA.push(rec);
+  saveData('smc_deseuri',DESEURI_DATA);
+  if(typeof upsertRecord==='function') upsertRecord('deseuri_data',rec).catch(e=>{});
+  closeModal('modal-deseuri-add');
+  renderFormular('deseuri');
+}
+
+function deleteDeseu(id) {
+  if(!confirm('Ștergeți această înregistrare?'))return;
+  if(typeof deleteRecord==='function') deleteRecord('deseuri_data',id).catch(e=>{});
+  DESEURI_DATA=DESEURI_DATA.filter(d=>d.id!==id);
+  saveData('smc_deseuri',DESEURI_DATA);
+  renderFormular('deseuri');
+}
+
+function genRaportDeseuriModal() {
+  const luni=[...new Set(DESEURI_DATA.map(d=>d.data.slice(0,7)))].sort().reverse();
+  const sel=document.getElementById('rap-des-luna');
+  if(sel){
+    sel.innerHTML='<option value="">— selectați luna —</option>'+
+      luni.map(l=>`<option value="${l}">${l}</option>`).join('');
+  }
+  showModal('modal-rap-deseuri');
+}
+
+function genRaportDeseuri() {
+  const luna=document.getElementById('rap-des-luna').value;
+  if(!luna){alert('Selectați luna!');return;}
+  const list=DESEURI_DATA.filter(d=>d.data.startsWith(luna));
+  const total=list.reduce((s,d)=>s+d.cantitate,0);
+  const [yr,mo]=luna.split('-');
+  const lunaNume=new Date(parseInt(yr),parseInt(mo)-1,1).toLocaleDateString('ro-RO',{month:'long',year:'numeric'});
+  document.getElementById('rap-deseuri-body').innerHTML=`
+    <div style="border:1px solid var(--gray-200);border-radius:var(--radius);padding:16px" id="raport-deseuri-print">
+      <div style="text-align:center;margin-bottom:16px;border-bottom:2px solid #ef4444;padding-bottom:12px">
+        <div style="font-size:11px;color:var(--gray-500)">Laborator de Biologie Moleculară și Genetică · Invitro Diagnostics SRL</div>
+        <div style="font-size:16px;font-weight:700;color:#ef4444;margin:6px 0">RAPORT LUNAR DEȘEURI BIOLOGICE</div>
+        <div style="font-size:13px;font-weight:600">Perioada: ${lunaNume}</div>
+      </div>
+      <div style="background:#fff5f5;border-radius:var(--radius);padding:12px;margin-bottom:16px;text-align:center">
+        <div style="font-size:28px;font-weight:700;color:#ef4444">${total.toFixed(2)} kg</div>
+        <div style="font-size:12px;color:var(--gray-500)">Total deșeuri biologice predate · Cod 18.01.03</div>
+      </div>
+      <table style="width:100%;border-collapse:collapse;font-size:12px">
+        <thead><tr style="background:#fee2e2">
+          <th style="border:1px solid #fca5a5;padding:6px;text-align:left">Data</th>
+          <th style="border:1px solid #fca5a5;padding:6px;text-align:left">Ora</th>
+          <th style="border:1px solid #fca5a5;padding:6px;text-align:left">Secția</th>
+          <th style="border:1px solid #fca5a5;padding:6px;text-align:center">Cod</th>
+          <th style="border:1px solid #fca5a5;padding:6px;text-align:center">Cantitate (kg)</th>
+          <th style="border:1px solid #fca5a5;padding:6px;text-align:left">Responsabil</th>
+        </tr></thead>
+        <tbody>
+          ${list.map(d=>`<tr>
+            <td style="border:1px solid #e5e7eb;padding:5px">${fmtDate(d.data)}</td>
+            <td style="border:1px solid #e5e7eb;padding:5px;font-family:monospace">${d.ora||'—'}</td>
+            <td style="border:1px solid #e5e7eb;padding:5px">${d.sectia}</td>
+            <td style="border:1px solid #e5e7eb;padding:5px;text-align:center;font-weight:600;color:#ef4444">${d.cod}</td>
+            <td style="border:1px solid #e5e7eb;padding:5px;text-align:center;font-weight:700">${d.cantitate}</td>
+            <td style="border:1px solid #e5e7eb;padding:5px">${d.responsabil}</td>
+          </tr>`).join('')}
+          <tr style="background:#fef2f2;font-weight:700">
+            <td colspan="4" style="border:1px solid #fca5a5;padding:6px;text-align:right">TOTAL:</td>
+            <td style="border:1px solid #fca5a5;padding:6px;text-align:center;color:#ef4444">${total.toFixed(2)} kg</td>
+            <td style="border:1px solid #fca5a5;padding:6px"></td>
+          </tr>
+        </tbody>
+      </table>
+      <div style="margin-top:24px;display:grid;grid-template-columns:1fr 1fr;gap:32px">
+        <div style="text-align:center">
+          <div style="border-top:1px solid #374151;padding-top:8px;margin-top:48px;font-size:12px">
+            <div style="font-weight:600">Rotari Ion</div><div style="color:var(--gray-500)">Șef laborator</div>
+          </div>
+        </div>
+        <div style="text-align:center">
+          <div style="border-top:1px solid #374151;padding-top:8px;margin-top:48px;font-size:12px">
+            <div style="font-weight:600">Data: ${fmtDate(todayStr())}</div>
+          </div>
+        </div>
+      </div>
+    </div>`;
+}
+
+function printRaportDeseuri() {
+  const el=document.getElementById('raport-deseuri-print');
+  if(!el||!el.innerHTML.trim()){alert('Generați mai întâi raportul!');return;}
+  const win=window.open('','_blank');
+  win.document.write('<html><head><title>Raport Deșeuri</title><style>body{font-family:Arial,sans-serif;margin:20mm}table{width:100%;border-collapse:collapse}th,td{border:1px solid #ccc;padding:5px}@media print{button{display:none}}</style></head><body>'+el.innerHTML+'</body></html>');
+  win.document.close();
+  setTimeout(()=>win.print(),500);
+}
+
+// ─── VERIFICARE ECHIPAMENTE ───────────────────────────────────
+function renderVerifEchBody(el) {
+  el.innerHTML=`
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px">
+      <div style="font-size:14px;font-weight:600;color:#3b82f6">🔬 Verificare Zilnică Echipamente — Inspecție vizuală</div>
+      <button class="btn btn-primary" onclick="openVerifEch()">+ Verificare nouă</button>
+    </div>
+    <div class="table-wrap">
+      <table>
+        <thead><tr>
+          <th style="width:100px">Data</th><th style="width:80px">Ora</th>
+          <th>Echipamente verificate</th><th>Operator</th>
+          <th style="width:80px">Status</th><th style="width:60px"></th>
+        </tr></thead>
+        <tbody>
+          ${VERIF_ECH_DATA.length===0?'<tr><td colspan="6" style="text-align:center;padding:20px;color:var(--gray-400)">Nicio verificare înregistrată.</td></tr>':
+          [...VERIF_ECH_DATA].sort((a,b)=>b.ts.localeCompare(a.ts)).slice(0,30).map(v=>{
+            const nrOk=v.echipamente.filter(e=>e.ok).length;
+            const total=v.echipamente.length;
+            const ok=nrOk===total;
+            return `<tr>
+              <td style="font-size:12px">${fmtDate(v.data)}</td>
+              <td style="font-size:12px;font-family:monospace">${v.ora||'—'}</td>
+              <td style="font-size:12px">${nrOk}/${total} conforme${v.obs?' · '+v.obs.slice(0,40):''}</td>
+              <td style="font-size:12px">${v.operator}</td>
+              <td><span class="badge ${ok?'badge-existent':'badge-lipsa'}" style="font-size:10px">${ok?'✓ OK':'⚠ Obs.'}</span></td>
+              <td><button class="btn btn-outline" style="padding:2px 7px;font-size:11px" onclick="deleteVerifEch('${v.id}')">🗑️</button></td>
+            </tr>`;
+          }).join('')}
+        </tbody>
+      </table>
+    </div>`;
+}
+
+function openVerifEch() {
+  const now=new Date();
+  document.getElementById('verif-ech-data-display').textContent=fmtDate(todayStr());
+  document.getElementById('verif-ech-operator').textContent=currentUser.nume;
+  document.getElementById('verif-ech-obs').value='';
+  // Build equipment checklist
+  const echList=[
+    'DTprime 5M1 (A5I842)','DTprime 5M1 (A5JN90)','DTprime 5M1 (A5J776)',
+    'DTprime II 5M1 (R5N637)','Rotor-Gene Q6','QuantStudio 5','GeneXpert XVI',
+    'SeqStudio','Ion GeneStudio S5','Hote flux laminar','Centrifuge','Congelatoare/Frigidere'
+  ];
+  document.getElementById('verif-ech-lista').innerHTML=echList.map((e,i)=>`
+    <div style="display:flex;align-items:center;gap:12px;padding:8px;border-bottom:1px solid var(--gray-100)">
+      <input type="checkbox" id="vech-${i}" checked style="width:16px;height:16px;flex-shrink:0">
+      <label for="vech-${i}" style="flex:1;font-size:13px;cursor:pointer">${e}</label>
+      <input type="text" id="vech-obs-${i}" placeholder="Observații" 
+        style="width:180px;padding:4px 8px;border:1px solid var(--gray-200);border-radius:6px;font-size:12px">
+    </div>`).join('');
+  showModal('modal-verif-ech');
+}
+
+function saveVerifEch() {
+  const echList=[
+    'DTprime 5M1 (A5I842)','DTprime 5M1 (A5JN90)','DTprime 5M1 (A5J776)',
+    'DTprime II 5M1 (R5N637)','Rotor-Gene Q6','QuantStudio 5','GeneXpert XVI',
+    'SeqStudio','Ion GeneStudio S5','Hote flux laminar','Centrifuge','Congelatoare/Frigidere'
+  ];
+  const now=new Date();
+  const rec={
+    id:'VE-'+Date.now(),
+    data:todayStr(),
+    ora:now.toTimeString().slice(0,5),
+    operator:currentUser.nume,
+    operator_id:currentUser.id,
+    echipamente:echList.map((e,i)=>({
+      nume:e,
+      ok:document.getElementById('vech-'+i)?.checked!==false,
+      obs:(document.getElementById('vech-obs-'+i)?.value||'').trim()
+    })),
+    obs:document.getElementById('verif-ech-obs').value,
+    ts:new Date().toISOString()
+  };
+  VERIF_ECH_DATA.push(rec);
+  saveData('smc_verif_ech',VERIF_ECH_DATA);
+  if(typeof upsertRecord==='function') upsertRecord('verif_ech_data',rec).catch(e=>{});
+  closeModal('modal-verif-ech');
+  renderFormular('echipamente');
+}
+
+function deleteVerifEch(id){
+  if(!confirm('Ștergeți această verificare?'))return;
+  VERIF_ECH_DATA=VERIF_ECH_DATA.filter(v=>v.id!==id);
+  saveData('smc_verif_ech',VERIF_ECH_DATA);
+  renderFormular('echipamente');
+}
+
+// ─── RECEPȚIE PROBE ───────────────────────────────────────────
+function renderReceptieBody(el) {
+  el.innerHTML=`
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px">
+      <div style="font-size:14px;font-weight:600;color:#10b981">📥 Checklist Recepție Probe</div>
+      <button class="btn btn-primary" onclick="openReceptie()">+ Recepție nouă</button>
+    </div>
+    <div class="table-wrap">
+      <table>
+        <thead><tr>
+          <th style="width:100px">Data</th><th style="width:60px">Ora</th>
+          <th style="width:80px">Nr. probe</th><th>Verificări</th>
+          <th>Operator</th><th style="width:80px">Status</th><th style="width:60px"></th>
+        </tr></thead>
+        <tbody>
+          ${RECEPTIE_DATA.length===0?'<tr><td colspan="7" style="text-align:center;padding:20px;color:var(--gray-400)">Nicio recepție înregistrată.</td></tr>':
+          [...RECEPTIE_DATA].sort((a,b)=>b.ts.localeCompare(a.ts)).slice(0,30).map(r=>{
+            const nrOk=Object.values(r.checks||{}).filter(Boolean).length;
+            const total=6;
+            return `<tr>
+              <td style="font-size:12px">${fmtDate(r.data)}</td>
+              <td style="font-size:12px;font-family:monospace">${r.ora||'—'}</td>
+              <td style="text-align:center;font-weight:600">${r.nr_probe}</td>
+              <td style="font-size:12px">${nrOk}/${total} bifate${r.obs?' · '+r.obs.slice(0,30):''}</td>
+              <td style="font-size:12px">${r.operator}</td>
+              <td><span class="badge ${nrOk===total?'badge-existent':'badge-prioritar'}" style="font-size:10px">${nrOk===total?'✓ Conform':'⚠ Parțial'}</span></td>
+              <td><button class="btn btn-outline" style="padding:2px 7px;font-size:11px" onclick="deleteReceptie('${r.id}')">🗑️</button></td>
+            </tr>`;
+          }).join('')}
+        </tbody>
+      </table>
+    </div>`;
+}
+
+function openReceptie(){
+  const now=new Date();
+  document.getElementById('rec-data').value=todayStr();
+  document.getElementById('rec-ora').value=now.toTimeString().slice(0,5);
+  document.getElementById('rec-nr-probe').value='';
+  document.getElementById('rec-obs').value='';
+  ['rec-c1','rec-c2','rec-c3','rec-c4','rec-c5','rec-c6'].forEach(id=>{
+    const el=document.getElementById(id); if(el) el.checked=false;
+  });
+  showModal('modal-receptie');
+}
+
+function saveReceptie(){
+  const nr=parseInt(document.getElementById('rec-nr-probe').value);
+  if(!nr||nr<1){alert('Introduceți numărul de probe!');return;}
+  const rec={
+    id:'REC-'+Date.now(),
+    data:document.getElementById('rec-data').value,
+    ora:document.getElementById('rec-ora').value,
+    nr_probe:nr,
+    checks:{
+      c1:document.getElementById('rec-c1')?.checked||false,
+      c2:document.getElementById('rec-c2')?.checked||false,
+      c3:document.getElementById('rec-c3')?.checked||false,
+      c4:document.getElementById('rec-c4')?.checked||false,
+      c5:document.getElementById('rec-c5')?.checked||false,
+      c6:document.getElementById('rec-c6')?.checked||false,
+    },
+    obs:document.getElementById('rec-obs').value,
+    operator:currentUser.nume,
+    operator_id:currentUser.id,
+    ts:new Date().toISOString()
+  };
+  RECEPTIE_DATA.push(rec);
+  saveData('smc_receptie',RECEPTIE_DATA);
+  if(typeof upsertRecord==='function') upsertRecord('receptie_data',rec).catch(e=>{});
+  closeModal('modal-receptie');
+  renderFormular('receptie');
+}
+
+function deleteReceptie(id){
+  if(!confirm('Ștergeți această înregistrare?'))return;
+  RECEPTIE_DATA=RECEPTIE_DATA.filter(r=>r.id!==id);
+  saveData('smc_receptie',RECEPTIE_DATA);
+  renderFormular('receptie');
+}
+
+// ─── BIOSIGURANȚĂ ─────────────────────────────────────────────
+function renderBiosigBody(el) {
+  const tipLabel={eip:'EIP distribuit',instruire:'Instruire',incident:'Incident'};
+  const tipColor={eip:'badge-existent',instruire:'badge-prioritar',incident:'badge-lipsa'};
+  el.innerHTML=`
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px">
+      <div style="font-size:14px;font-weight:600;color:#f59e0b">🦺 Registru Biosiguranță</div>
+      <button class="btn btn-primary" onclick="openBiosig()">+ Înregistrare nouă</button>
+    </div>
+    <div class="table-wrap">
+      <table>
+        <thead><tr>
+          <th style="width:100px">Data</th><th style="width:100px">Tip</th>
+          <th>Detalii</th><th>Operator</th><th style="width:60px"></th>
+        </tr></thead>
+        <tbody>
+          ${BIOSIG_DATA.length===0?'<tr><td colspan="5" style="text-align:center;padding:20px;color:var(--gray-400)">Nicio înregistrare de biosiguranță.</td></tr>':
+          [...BIOSIG_DATA].sort((a,b)=>b.ts.localeCompare(a.ts)).map(b=>`
+            <tr>
+              <td style="font-size:12px">${fmtDate(b.data)}</td>
+              <td><span class="badge ${tipColor[b.tip]||''}" style="font-size:10px">${tipLabel[b.tip]||b.tip}</span></td>
+              <td style="font-size:12px">${b.detalii||b.obs||'—'}</td>
+              <td style="font-size:12px">${b.operator}</td>
+              <td><button class="btn btn-outline" style="padding:2px 7px;font-size:11px" onclick="deleteBiosig('${b.id}')">🗑️</button></td>
+            </tr>`).join('')}
+        </tbody>
+      </table>
+    </div>`;
+}
+
+function onBiosigTipChange(){
+  const tip=document.getElementById('biosig-tip').value;
+  document.getElementById('biosig-eip-fields').style.display=tip!=='incident'?'block':'none';
+  document.getElementById('biosig-incident-fields').style.display=tip==='incident'?'block':'none';
+}
+
+function openBiosig(){
+  document.getElementById('biosig-data').value=todayStr();
+  document.getElementById('biosig-tip').value='eip';
+  onBiosigTipChange();
+  showModal('modal-biosig');
+}
+
+function saveBiosig(){
+  const tip=document.getElementById('biosig-tip').value;
+  let detalii='';
+  if(tip==='eip'){
+    const eip=[];
+    if(document.getElementById('biosig-halat')?.checked) eip.push('Halat');
+    if(document.getElementById('biosig-manusi')?.checked) eip.push('Mănuși');
+    if(document.getElementById('biosig-masca')?.checked) eip.push('Mască');
+    if(document.getElementById('biosig-ochelari')?.checked) eip.push('Ochelari');
+    detalii=document.getElementById('biosig-personal').value+' — EIP: '+eip.join(', ');
+  } else if(tip==='incident'){
+    detalii=document.getElementById('biosig-incident-tip').value+' — '+
+      document.getElementById('biosig-incident-pers').value+' — '+
+      (document.getElementById('biosig-masuri').value||'—');
+  } else {
+    detalii='Instruire biosiguranță — '+(document.getElementById('biosig-personal').value||'');
+  }
+  const rec={
+    id:'BIO-'+Date.now(),
+    tip,data:document.getElementById('biosig-data').value,
+    detalii,obs:document.getElementById('biosig-obs').value,
+    operator:currentUser.nume,operator_id:currentUser.id,
+    ts:new Date().toISOString()
+  };
+  BIOSIG_DATA.push(rec);
+  saveData('smc_biosig',BIOSIG_DATA);
+  if(typeof upsertRecord==='function') upsertRecord('biosig_data',rec).catch(e=>{});
+  closeModal('modal-biosig');
+  renderFormular('biosiguranta');
+}
+
+function deleteBiosig(id){
+  if(!confirm('Ștergeți această înregistrare?'))return;
+  BIOSIG_DATA=BIOSIG_DATA.filter(b=>b.id!==id);
+  saveData('smc_biosig',BIOSIG_DATA);
+  renderFormular('biosiguranta');
+}
+
+// ─── INIT ─────────────────────────────────────────────────────
+DESEURI_DATA = loadData('smc_deseuri', []);
+VERIF_ECH_DATA = loadData('smc_verif_ech', []);
+RECEPTIE_DATA = loadData('smc_receptie', []);
+BIOSIG_DATA = loadData('smc_biosig', []);
+
+// Override showPage for documente to render nivel 1 by default
+
+
 // ─── INIT
 initSupabase(); // loads from Supabase then renders
+
 
 
 
