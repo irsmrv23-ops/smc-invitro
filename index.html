@@ -673,7 +673,7 @@ tr:hover td{background:var(--gray-50)}
     <div style="display:flex;gap:8px">
       <button class="btn btn-outline" onclick="exportSeriiExcel()">&#128194; Export Excel</button>
       <button class="btn btn-outline" onclick="window.print()">&#128438; Print</button>
-      <button class="btn btn-primary" onclick="showModal('modal-serie-add')">+ Serie nouă</button>
+      <button class="btn btn-primary" onclick="openSerieModal()">+ Serie nouă</button>
     </div>
   </div>
 
@@ -1604,15 +1604,24 @@ tr:hover td{background:var(--gray-50)}
 </div>
 
 <div class="modal-bg" id="modal-serie-add" onclick="if(event.target===this)closeModal('modal-serie-add')">
-  <div class="modal" style="max-width:520px">
-    <h3>Înregistrare serie zilnică</h3>
+  <div class="modal" style="max-width:680px;max-height:90vh;overflow-y:auto">
+    <h3>&#9654; Înregistrare serie zilnică</h3>
+    <!-- Header serie -->
     <div class="form-row">
       <div class="form-group"><label>Data</label><input type="date" id="serie-data"></div>
-      <div class="form-group"><label>Grupă</label>
-        <select id="serie-grupa"><option value="IST">IST</option><option value="TOR">TOR</option><option value="HEP">HEP</option><option value="IRP">IRP</option><option value="IGI">IGI</option><option value="GEN">GEN</option></select>
-      </div>
+      <div class="form-group"><label>Operator</label><select id="serie-operator"></select></div>
     </div>
     <div class="form-row">
+      <div class="form-group"><label>Grupă</label>
+        <select id="serie-grupa" onchange="onSerieGrupaChange()">
+          <option value="IST">IST — Infecții sexual-transmisibile</option>
+          <option value="TOR">TOR — TORCH</option>
+          <option value="HEP">HEP — Hepatite virale</option>
+          <option value="IRP">IRP — Infecții respiratorii</option>
+          <option value="IGI">IGI — Infecții gastrointestinale</option>
+          <option value="GEN">GEN — Genetică</option>
+        </select>
+      </div>
       <div class="form-group"><label>Echipament</label>
         <select id="serie-echipament">
           <option value="DTprime 5M1 (A5I842)">DTprime 5M1 – A5I842</option>
@@ -1624,18 +1633,87 @@ tr:hover td{background:var(--gray-50)}
           <option value="GeneXpert XVI (110009739)">GeneXpert XVI</option>
         </select>
       </div>
-      <div class="form-group"><label>Nr. probe procesate</label><input type="number" id="serie-probe" min="0" placeholder="ex. 24"></div>
     </div>
-    <div class="form-row">
-      <div class="form-group"><label>Operator</label><select id="serie-operator"></select></div>
-      <div class="form-group"><label>IQC serie</label>
-        <select id="serie-iqc"><option value="acceptat">Acceptat</option><option value="respins">Respins</option><option value="nefacut">Nefăcut (motivat)</option></select>
+    <div class="form-group" style="margin-bottom:4px">
+      <label>Observații serie</label>
+      <input type="text" id="serie-obs" placeholder="Observații generale, incidente">
+    </div>
+
+    <!-- SERVICII ADAUGATE -->
+    <div style="border-top:2px solid var(--blue);margin:16px 0 12px;padding-top:12px">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px">
+        <div style="font-size:14px;font-weight:600;color:var(--blue)">&#128203; Servicii în această serie</div>
+        <button class="btn btn-primary" style="padding:5px 12px;font-size:12px" onclick="openAddServiciuSerie()">+ Adaugă serviciu</button>
+      </div>
+      <div id="serie-servicii-lista" style="min-height:60px">
+        <div style="text-align:center;padding:20px;color:var(--gray-400);font-size:13px;border:2px dashed var(--gray-200);border-radius:var(--radius)">
+          Niciun serviciu adăugat. Apăsați "+ Adaugă serviciu".
+        </div>
       </div>
     </div>
-    <div class="form-group" style="margin-bottom:4px"><label>Observații</label><input type="text" id="serie-obs" placeholder="Note, incidente"></div>
+
+    <!-- TOTAL -->
+    <div id="serie-total-info" style="display:none;background:var(--gray-50);border-radius:var(--radius);padding:10px;font-size:13px;margin-bottom:12px"></div>
+
     <div class="modal-footer">
       <button class="btn btn-outline" onclick="closeModal('modal-serie-add')">Anulare</button>
-      <button class="btn btn-primary" onclick="saveSerie()">Salvează</button>
+      <button class="btn btn-primary" onclick="saveSerie()">&#10003; Salvează seria</button>
+    </div>
+  </div>
+</div>
+
+<!-- ═══ MODAL ADAUGARE SERVICIU IN SERIE ══════════════════════ -->
+<div class="modal-bg" id="modal-serie-srv" onclick="if(event.target===this)closeModal('modal-serie-srv')" style="z-index:1100">
+  <div class="modal" style="max-width:520px;z-index:1101">
+    <h3>&#43; Adaugă serviciu în serie</h3>
+    <!-- Serviciu search -->
+    <div class="form-group" style="margin-bottom:8px">
+      <label>Serviciu <span style="font-size:11px;color:var(--gray-400)">(cod sau denumire)</span></label>
+      <input type="text" id="ssrv-search" placeholder="&#128269; ex. CT001 sau Chlamydia..."
+        oninput="filterSrvSerie()" autocomplete="off"
+        style="width:100%;padding:8px 10px;border:1px solid var(--gray-200);border-radius:var(--radius);font-size:13px">
+      <div id="ssrv-dropdown" style="display:none;position:absolute;z-index:1200;background:#fff;border:1px solid var(--gray-200);border-radius:var(--radius);box-shadow:0 8px 24px rgba(0,0,0,.15);max-height:200px;overflow-y:auto;width:calc(100% - 48px)"></div>
+      <div id="ssrv-selected" style="margin-top:6px;min-height:24px;font-size:12px;color:var(--blue)"></div>
+      <input type="hidden" id="ssrv-id">
+      <input type="hidden" id="ssrv-tip">
+    </div>
+
+    <!-- Nr probe -->
+    <div class="form-group" style="margin-bottom:8px">
+      <label>Nr. probe pacienți</label>
+      <input type="number" id="ssrv-probe" min="1" placeholder="ex. 8" oninput="updateSerieTotals()">
+    </div>
+
+    <!-- Control Pozitiv -->
+    <div style="background:#f0fdf4;border-radius:var(--radius);padding:12px;margin-bottom:8px">
+      <div style="font-size:12px;font-weight:600;color:var(--green);margin-bottom:8px">&#9679; Control Pozitiv (CP)</div>
+      <div class="form-row">
+        <div class="form-group"><label style="font-size:12px">Ct obținut</label>
+          <input type="number" id="ssrv-cp-ct" step="0.01" placeholder="ex. 28.45" oninput="evalSrvIQC()"></div>
+        <div class="form-group"><label style="font-size:12px">Ct țintă (IFU/lot)</label>
+          <input type="number" id="ssrv-cp-tinta" step="0.01" placeholder="ex. 28.00" oninput="evalSrvIQC()"></div>
+      </div>
+      <div id="ssrv-cp-eval" style="font-size:12px;min-height:18px;padding:4px 8px;border-radius:4px"></div>
+    </div>
+
+    <!-- Control Negativ -->
+    <div style="background:#fff5f5;border-radius:var(--radius);padding:12px;margin-bottom:8px">
+      <div style="font-size:12px;font-weight:600;color:var(--red);margin-bottom:8px">&#9679; Control Negativ (CN)</div>
+      <div class="form-group"><label style="font-size:12px">Ct obținut <span style="color:var(--gray-400)">(trebuie >40 sau nedeterminat)</span></label>
+        <input type="number" id="ssrv-cn-ct" step="0.01" placeholder="Lasați gol dacă nedeterminat" oninput="evalSrvIQC()"></div>
+      <div id="ssrv-cn-eval" style="font-size:12px;min-height:18px;padding:4px 8px;border-radius:4px"></div>
+    </div>
+
+    <!-- Calibratori (doar cantitativ) -->
+    <div id="ssrv-cal-section" style="display:none;background:#eff6ff;border-radius:var(--radius);padding:12px;margin-bottom:8px">
+      <div style="font-size:12px;font-weight:600;color:var(--blue);margin-bottom:8px">&#9632; Calibratori</div>
+      <div id="ssrv-cal-rows"></div>
+      <button class="btn btn-outline" style="padding:3px 10px;font-size:11px;margin-top:6px" onclick="addCalibrator()">+ Calibrator</button>
+    </div>
+
+    <div class="modal-footer">
+      <button class="btn btn-outline" onclick="closeModal('modal-serie-srv')">Anulare</button>
+      <button class="btn btn-primary" onclick="addServiciuInSerie()">Adaugă serviciu</button>
     </div>
   </div>
 </div>
@@ -3255,25 +3333,8 @@ function deleteMC(id){
 }
 
 // ─── SERII ZILNICE ────────────────────────────────────────────
-function saveSerie(){
-  if(!document.getElementById('serie-data').value){alert('Introduceți data!');return;}
-  const rec={
-    id:'SER-'+Date.now(),
-    data:document.getElementById('serie-data').value,
-    grupa:document.getElementById('serie-grupa').value,
-    echipament:document.getElementById('serie-echipament').value,
-    nr_probe:parseInt(document.getElementById('serie-probe').value)||0,
-    operator_id:document.getElementById('serie-operator').value,
-    operator_nume:CONFIG.personal.find(p=>p.id===document.getElementById('serie-operator').value)?.nume||'',
-    iqc:document.getElementById('serie-iqc').value,
-    obs:document.getElementById('serie-obs').value,
-    ts:new Date().toISOString()
-  };
-  SERII_DATA.push(rec);
-  saveData('smc_serii',SERII_DATA);
-  closeModal('modal-serie-add');
-  renderSerii();
-}
+// saveSerie: see new serie module below
+
 
 function renderSerii(){
   const q=(document.getElementById('serii-search')||{}).value||'';
@@ -5452,18 +5513,8 @@ function scadeStocSerie(serie){
 }
 
 // ─── PATCH saveSerie to trigger stock deduction ────────────────
-const _origSaveSerie = typeof saveSerie === 'function' ? saveSerie : null;
-if(_origSaveSerie){
-  window.saveSerie = function(){
-    // Capture nr_probe and grupa before saving
-    const nr = parseInt((document.getElementById('serie-nr-probe')||{}).value)||0;
-    const grupa = (document.getElementById('serie-grupa')||{}).value||'';
-    const data = (document.getElementById('serie-data')||{}).value||todayStr();
-    _origSaveSerie();
-    if(nr>0&&grupa) scadeStocSerie({nr_probe:nr,grupa,data});
-    renderMiscari();
-  };
-}
+// saveSerie patch removed - new version handles stock deduction
+
 
 
 // ─── GOOGLE SHEETS SYNC ───────────────────────────────────────
@@ -6926,8 +6977,399 @@ BIOSIG_DATA = loadData('smc_biosig', []);
 // Override showPage for documente to render nivel 1 by default
 
 
+
+// ════════════════════════════════════════════════════════════
+// SERIE ZILNICĂ — MULTI-SERVICIU + IQC UNIFICAT
+// ════════════════════════════════════════════════════════════
+
+let serieServicii = []; // serviciile adăugate în seria curentă
+let calCount = 0;
+
+// ─── SERIE MODAL OPEN ─────────────────────────────────────────
+function openSerieModal(){
+  serieServicii = [];
+  calCount = 0;
+  document.getElementById('serie-data').value = todayStr();
+  document.getElementById('serie-obs').value = '';
+  populateOperators();
+  renderSerieServiciiLista();
+  showModal('modal-serie-add');
+}
+
+function onSerieGrupaChange(){
+  // Reset servicii when grupa changes
+  if(serieServicii.length>0){
+    if(!confirm('Schimbarea grupei va șterge serviciile adăugate. Continuați?')){
+      return;
+    }
+    serieServicii=[];
+    renderSerieServiciiLista();
+  }
+}
+
+// ─── SERVICIU SEARCH IN SERIE ─────────────────────────────────
+let serieSrvSelected = null;
+
+function filterSrvSerie(){
+  const q=(document.getElementById('ssrv-search').value||'').toLowerCase().trim();
+  const dd=document.getElementById('ssrv-dropdown');
+  if(!q){dd.style.display='none';return;}
+  const grupa=document.getElementById('serie-grupa').value;
+  const matches=SERVICII.filter(s=>
+    s.activ!==false&&s.grupa===grupa&&
+    (s.cod.toLowerCase().includes(q)||s.den.toLowerCase().includes(q))
+  ).slice(0,12);
+  if(!matches.length){dd.style.display='none';return;}
+  dd.innerHTML=matches.map(s=>`<div onclick="selectSrvSerie('${s.id}')"
+    style="padding:8px 12px;cursor:pointer;font-size:13px;border-bottom:1px solid var(--gray-100)"
+    onmouseover="this.style.background='#f3f4f6'" onmouseout="this.style.background=''">
+    <span style="font-family:monospace;font-size:12px;font-weight:700;color:var(--blue);margin-right:8px">${s.cod}</span>
+    ${s.den}
+    <span style="font-size:10px;color:var(--gray-400);margin-left:6px">${s.tip==='cantitativ'?'📊 Cantitativ':'🔵 Calitativ'}</span>
+  </div>`).join('');
+  dd.style.display='block';
+}
+
+function selectSrvSerie(id){
+  const s=SERVICII.find(x=>x.id===id);
+  if(!s)return;
+  serieSrvSelected=s;
+  document.getElementById('ssrv-id').value=s.id;
+  document.getElementById('ssrv-tip').value=s.tip;
+  document.getElementById('ssrv-search').value=s.cod+' — '+s.den;
+  document.getElementById('ssrv-dropdown').style.display='none';
+  document.getElementById('ssrv-selected').innerHTML=
+    `<span style="font-family:monospace;font-weight:700;color:var(--blue)">${s.cod}</span> — ${s.den}
+     <span style="background:${s.tip==='cantitativ'?'#d1fae5':'#dbeafe'};color:${s.tip==='cantitativ'?'#065f46':'#1e40af'};padding:1px 6px;border-radius:4px;font-size:10px;margin-left:6px">${s.tip}</span>`;
+  // Show calibratori section if cantitativ
+  document.getElementById('ssrv-cal-section').style.display=s.tip==='cantitativ'?'block':'none';
+  if(s.tip==='cantitativ') initCalibratoriForSrv(s);
+  // Auto-fill Ct tinta from MC_DATA if available
+  const mc=MC_DATA.find(m=>m.grupa===s.grupa&&m.activ!==false);
+  if(mc&&mc.ct_tinta){
+    document.getElementById('ssrv-cp-tinta').value=mc.ct_tinta;
+    evalSrvIQC();
+  }
+}
+
+function openAddServiciuSerie(){
+  serieSrvSelected=null;
+  calCount=0;
+  document.getElementById('ssrv-search').value='';
+  document.getElementById('ssrv-id').value='';
+  document.getElementById('ssrv-tip').value='';
+  document.getElementById('ssrv-selected').innerHTML='';
+  document.getElementById('ssrv-dropdown').style.display='none';
+  document.getElementById('ssrv-probe').value='';
+  document.getElementById('ssrv-cp-ct').value='';
+  document.getElementById('ssrv-cp-tinta').value='';
+  document.getElementById('ssrv-cn-ct').value='';
+  document.getElementById('ssrv-cp-eval').innerHTML='';
+  document.getElementById('ssrv-cn-eval').innerHTML='';
+  document.getElementById('ssrv-cal-section').style.display='none';
+  document.getElementById('ssrv-cal-rows').innerHTML='';
+  showModal('modal-serie-srv');
+}
+
+// ─── IQC EVALUATION ───────────────────────────────────────────
+function evalSrvIQC(){
+  const cpCt=parseFloat(document.getElementById('ssrv-cp-ct').value);
+  const cpTinta=parseFloat(document.getElementById('ssrv-cp-tinta').value)||null;
+  const cnCt=parseFloat(document.getElementById('ssrv-cn-ct').value);
+
+  // CP evaluation
+  const cpEl=document.getElementById('ssrv-cp-eval');
+  if(!isNaN(cpCt)&&cpTinta){
+    const mc=serieSrvSelected?MC_DATA.find(m=>m.grupa===serieSrvSelected.grupa):null;
+    const sd=mc&&mc.sd?parseFloat(mc.sd):2.0;
+    const dev=Math.abs(cpCt-cpTinta);
+    const ok=dev<=sd*2;
+    cpEl.style.background=ok?'#d1fae5':'#fee2e2';
+    cpEl.style.color=ok?'#065f46':'#991b1b';
+    cpEl.textContent=(ok?'✓ ACCEPTAT':'✗ RESPINS')+
+      ` — Ct ${cpCt.toFixed(2)} · Țintă ${cpTinta.toFixed(2)} · Dev ${dev.toFixed(2)} · ±2SD ±${(sd*2).toFixed(1)}`;
+  } else if(!isNaN(cpCt)){
+    cpEl.style.background='#fef3c7'; cpEl.style.color='#92400e';
+    cpEl.textContent='Introduceți Ct țintă pentru evaluare automată';
+  } else {
+    cpEl.innerHTML='';
+  }
+
+  // CN evaluation
+  const cnEl=document.getElementById('ssrv-cn-eval');
+  const cnOk=isNaN(cnCt)||cnCt>40;
+  if(!isNaN(cnCt)||document.getElementById('ssrv-cn-ct').value!==''){
+    cnEl.style.background=cnOk?'#d1fae5':'#fee2e2';
+    cnEl.style.color=cnOk?'#065f46':'#991b1b';
+    cnEl.textContent=cnOk?`✓ CN ACCEPTAT${!isNaN(cnCt)?' — Ct '+cnCt.toFixed(2)+' (>40)':' — Nedeterminat'}`:`✗ CN RESPINS — Ct ${cnCt.toFixed(2)} ≤ 40`;
+  } else {
+    cnEl.innerHTML='';
+  }
+}
+
+// ─── CALIBRATORI ──────────────────────────────────────────────
+function initCalibratoriForSrv(srv){
+  calCount=1;
+  document.getElementById('ssrv-cal-rows').innerHTML=buildCalRow(0);
+}
+
+function addCalibrator(){
+  const el=document.getElementById('ssrv-cal-rows');
+  el.innerHTML+=buildCalRow(calCount);
+  calCount++;
+}
+
+function buildCalRow(idx){
+  const unit=serieSrvSelected&&serieSrvSelected.unit?serieSrvSelected.unit:'copii/mL';
+  return `<div class="form-row" id="cal-row-${idx}" style="margin-bottom:8px">
+    <div class="form-group"><label style="font-size:11px">Cal ${idx+1} — Valoare (${unit})</label>
+      <input type="number" id="cal-val-${idx}" step="1" placeholder="ex. 1000"></div>
+    <div class="form-group"><label style="font-size:11px">Cal ${idx+1} — Valoare țintă</label>
+      <input type="number" id="cal-tinta-${idx}" step="1" placeholder="ex. 1000"></div>
+    ${idx>0?`<button onclick="removeCalRow(${idx})" style="background:none;border:none;color:var(--red);cursor:pointer;padding:0 6px;margin-top:20px;font-size:18px">×</button>`:'<div style="width:32px"></div>'}
+  </div>`;
+}
+
+function removeCalRow(idx){
+  const el=document.getElementById('cal-row-'+idx);
+  if(el) el.remove();
+}
+
+function getCalibratoriValues(){
+  const cals=[];
+  for(let i=0;i<calCount;i++){
+    const valEl=document.getElementById('cal-val-'+i);
+    if(!valEl) continue;
+    const val=parseFloat(valEl.value);
+    const tinta=parseFloat(document.getElementById('cal-tinta-'+i)?.value)||null;
+    if(!isNaN(val)) cals.push({idx:i+1,val,tinta,unit:serieSrvSelected?.unit||'copii/mL'});
+  }
+  return cals;
+}
+
+// ─── ADD SERVICIU TO SERIE LIST ───────────────────────────────
+function addServiciuInSerie(){
+  const srvId=document.getElementById('ssrv-id').value;
+  if(!srvId){alert('Selectați un serviciu!');return;}
+  const srv=SERVICII.find(s=>s.id===srvId);
+  if(!srv)return;
+
+  const nrProbe=parseInt(document.getElementById('ssrv-probe').value)||0;
+  if(nrProbe<1){alert('Introduceți numărul de probe!');return;}
+
+  const cpCt=parseFloat(document.getElementById('ssrv-cp-ct').value)||null;
+  const cpTinta=parseFloat(document.getElementById('ssrv-cp-tinta').value)||null;
+  const cnCt=parseFloat(document.getElementById('ssrv-cn-ct').value);
+  const cnVal=isNaN(cnCt)?null:cnCt;
+
+  // Evaluate IQC
+  let cpRez='acceptat', cnRez='acceptat';
+  if(cpCt!==null&&cpTinta!==null){
+    const mc=MC_DATA.find(m=>m.grupa===srv.grupa);
+    const sd=mc&&mc.sd?parseFloat(mc.sd):2.0;
+    cpRez=Math.abs(cpCt-cpTinta)<=sd*2?'acceptat':'respins';
+  }
+  if(cnVal!==null) cnRez=cnVal>40?'acceptat':'respins';
+
+  const calibratori=srv.tip==='cantitativ'?getCalibratoriValues():[];
+
+  // Check duplicate
+  if(serieServicii.find(s=>s.srv_id===srvId)){
+    if(!confirm('Serviciul '+srv.cod+' este deja adăugat. Adăugați din nou?'))return;
+  }
+
+  serieServicii.push({
+    srv_id:srvId, srv_cod:srv.cod, srv_den:srv.den,
+    srv_tip:srv.tip, srv_unit:srv.unit||'',
+    nr_probe:nrProbe,
+    cp:{ct:cpCt,tinta:cpTinta,rezultat:cpRez},
+    cn:{ct:cnVal,rezultat:cnRez},
+    calibratori,
+    iqc_rezultat:cpRez==='acceptat'&&cnRez==='acceptat'?'acceptat':'respins'
+  });
+
+  closeModal('modal-serie-srv');
+  renderSerieServiciiLista();
+}
+
+function removeServiciuDinSerie(idx){
+  serieServicii.splice(idx,1);
+  renderSerieServiciiLista();
+}
+
+function renderSerieServiciiLista(){
+  const el=document.getElementById('serie-servicii-lista');
+  const totalEl=document.getElementById('serie-total-info');
+  if(!el)return;
+
+  if(!serieServicii.length){
+    el.innerHTML=`<div style="text-align:center;padding:20px;color:var(--gray-400);font-size:13px;border:2px dashed var(--gray-200);border-radius:var(--radius)">
+      Niciun serviciu adăugat. Apăsați "+ Adaugă serviciu".
+    </div>`;
+    if(totalEl) totalEl.style.display='none';
+    return;
+  }
+
+  const totalProbe=serieServicii.reduce((s,x)=>s+x.nr_probe,0);
+  const allOk=serieServicii.every(s=>s.iqc_rezultat==='acceptat');
+
+  el.innerHTML=`<div class="table-wrap" style="box-shadow:none;border:1px solid var(--gray-200)">
+    <table>
+      <thead><tr style="font-size:11px">
+        <th>Serviciu</th><th style="width:70px">Probe</th>
+        <th style="width:90px">CP Ct</th><th style="width:90px">CN Ct</th>
+        <th style="width:90px">IQC</th><th style="width:40px"></th>
+      </tr></thead>
+      <tbody>
+        ${serieServicii.map((s,i)=>`<tr>
+          <td style="font-size:12px">
+            <span style="font-family:monospace;font-weight:700;color:var(--blue)">${s.srv_cod}</span>
+            <div style="font-size:11px;color:var(--gray-500)">${s.srv_den}</div>
+          </td>
+          <td style="text-align:center;font-weight:600">${s.nr_probe}</td>
+          <td style="font-size:12px;font-family:monospace;text-align:center">
+            ${s.cp.ct!==null?s.cp.ct.toFixed(2):'—'}
+            ${s.cp.ct!==null?`<div style="font-size:10px;color:${s.cp.rezultat==='acceptat'?'var(--green)':'var(--red)'}">${s.cp.rezultat==='acceptat'?'✓':'✗'}</div>`:''}
+          </td>
+          <td style="font-size:12px;font-family:monospace;text-align:center">
+            ${s.cn.ct!==null?s.cn.ct.toFixed(2):'N/D'}
+            <div style="font-size:10px;color:${s.cn.rezultat==='acceptat'?'var(--green)':'var(--red)'}">${s.cn.rezultat==='acceptat'?'✓':'✗'}</div>
+          </td>
+          <td><span class="badge ${s.iqc_rezultat==='acceptat'?'badge-existent':'badge-lipsa'}" style="font-size:10px">${s.iqc_rezultat==='acceptat'?'OK':'RESPINS'}</span></td>
+          <td><button onclick="removeServiciuDinSerie(${i})" style="background:none;border:none;color:var(--red);cursor:pointer;font-size:16px">×</button></td>
+        </tr>`).join('')}
+      </tbody>
+    </table>
+  </div>`;
+
+  if(totalEl){
+    totalEl.style.display='block';
+    totalEl.innerHTML=`<strong>Total serie:</strong> ${serieServicii.length} servicii · ${totalProbe} probe ·
+      <span style="color:${allOk?'var(--green)':'var(--red)'}">IQC: ${allOk?'✓ Toate OK':'⚠ Există respingeri'}</span>`;
+  }
+}
+
+// ─── SAVE SERIE (unified) ─────────────────────────────────────
+function saveSerie(){
+  if(!document.getElementById('serie-data').value){alert('Introduceți data!');return;}
+  if(!serieServicii.length){alert('Adăugați cel puțin un serviciu în serie!');return;}
+
+  const totalProbe=serieServicii.reduce((s,x)=>s+x.nr_probe,0);
+  const operatorId=document.getElementById('serie-operator').value;
+  const operatorNume=(CONFIG.personal.find(p=>p.id===operatorId)||{}).nume||'';
+  const allOk=serieServicii.every(s=>s.iqc_rezultat==='acceptat');
+
+  const serieRec={
+    id:'SER-'+Date.now(),
+    data:document.getElementById('serie-data').value,
+    grupa:document.getElementById('serie-grupa').value,
+    echipament:document.getElementById('serie-echipament').value,
+    nr_probe:totalProbe,
+    operator_id:operatorId,
+    operator_nume:operatorNume,
+    servicii:serieServicii,
+    iqc_global:allOk?'acceptat':'respins',
+    obs:document.getElementById('serie-obs').value,
+    ts:new Date().toISOString()
+  };
+
+  SERII_DATA.push(serieRec);
+  saveData('smc_serii',SERII_DATA);
+  if(typeof upsertRecord==='function') upsertRecord('serii_data',serieRec).catch(e=>{});
+
+  // Auto-create IQC records for each serviciu
+  const iqcBatch=[];
+  serieServicii.forEach(s=>{
+    const baseRec={
+      data:serieRec.data,
+      grupa:serieRec.grupa,
+      srv_id:s.srv_id, srv_cod:s.srv_cod, srv_den:s.srv_den,
+      echipament:serieRec.echipament,
+      operator_id:operatorId, operator_nume:operatorNume,
+      lot_id:'', lot_nr:'',
+      obs:'Auto din serie '+serieRec.id,
+      ts:new Date().toISOString()
+    };
+
+    // CP record
+    if(s.cp.ct!==null||s.cp.tinta!==null){
+      const cpRec={...baseRec,
+        id:'IQC-CP-'+Date.now()+'-'+s.srv_id,
+        tip:'CP', ct:s.cp.ct, ct_tinta:s.cp.tinta,
+        rezultat:s.cp.rezultat
+      };
+      IQC_DATA.push(cpRec);
+      iqcBatch.push(cpRec);
+    }
+
+    // CN record
+    const cnRec={...baseRec,
+      id:'IQC-CN-'+Date.now()+'-'+s.srv_id,
+      tip:'CN', ct:s.cn.ct,
+      rezultat:s.cn.rezultat
+    };
+    IQC_DATA.push(cnRec);
+    iqcBatch.push(cnRec);
+
+    // Calibratori records
+    s.calibratori.forEach((cal,idx)=>{
+      const calRec={...baseRec,
+        id:'IQC-CAL-'+Date.now()+'-'+s.srv_id+'-'+idx,
+        tip:'CAL', val:cal.val, val_tinta:cal.tinta, val_unit:cal.unit,
+        rezultat:'acceptat'
+      };
+      IQC_DATA.push(calRec);
+      iqcBatch.push(calRec);
+    });
+  });
+
+  saveData('smc_iqc',IQC_DATA);
+  if(typeof upsertRecord==='function'){
+    iqcBatch.forEach(r=>upsertRecord('iqc_data',r).catch(e=>{}));
+  }
+
+  // Scade stoc
+  scadeStocSerie({
+    nr_probe:totalProbe, grupa:serieRec.grupa, data:serieRec.data
+  });
+
+  closeModal('modal-serie-add');
+  serieServicii=[];
+  renderSerii();
+  renderIQC();
+  renderDashboard();
+
+  // Alert IQC respins
+  const respinse=serieServicii.filter(s=>s.iqc_rezultat==='respins');
+  if(respinse.length>0){
+    if(confirm(`⚠ IQC RESPINS pentru ${respinse.length} serviciu/servicii:\n${respinse.map(s=>s.srv_cod).join(', ')}\n\nDoriți să deschideți o Neconformitate?`)){
+      openNCFromIQC({
+        grupa:serieRec.grupa,
+        operator_id:operatorId, operator_nume:operatorNume,
+        data:serieRec.data,
+        tip:'CP', rezultat:'respins',
+        obs:'IQC respins în seria '+serieRec.id+' pentru: '+respinse.map(s=>s.srv_cod).join(', ')
+      });
+    }
+  }
+}
+
+// Close serviciu dropdown on outside click
+document.addEventListener('click', function(e){
+  const dd=document.getElementById('ssrv-dropdown');
+  if(dd&&!dd.contains(e.target)&&e.target.id!=='ssrv-search'){
+    dd.style.display='none';
+  }
+});
+
+// Override showPage for serii to use new openSerieModal
+
+
 // ─── INIT
 initSupabase(); // loads from Supabase then renders
+
+
+
 
 
 
