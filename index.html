@@ -764,6 +764,7 @@ id="page-documente" class="page">
     <div style="display:flex;gap:8px">
       <button class="btn btn-outline" onclick="exportNCExcel()">&#128194; Export Excel</button>
       <button class="btn btn-outline" onclick="renderNCStats();showModal('modal-nc-stats')">&#128202; Statistici</button>
+      <button class="btn btn-outline" onclick="showRaportNC()">&#128202; Raport lunar</button>
       <button class="btn btn-outline" onclick="window.print()">&#128438; Print</button>
       <button class="btn btn-primary" onclick="showModal('modal-nc-add')">+ NC nouă</button>
     </div>
@@ -2474,6 +2475,93 @@ id="page-documente" class="page">
   </div>
 </div>
 
+
+<!-- ═══ MODAL RAPORT NC ════════════════════════════════════════ -->
+<div class="modal-bg" id="modal-nc-raport" onclick="if(event.target===this)closeModal('modal-nc-raport')">
+  <div class="modal" style="max-width:640px;max-height:88vh;overflow-y:auto">
+    <h3>&#128202; Raport Neconformități</h3>
+    <div style="display:flex;gap:8px;margin-bottom:16px;align-items:center;flex-wrap:wrap">
+      <select id="nc-rap-luna" style="padding:6px 10px;border:1px solid var(--gray-200);border-radius:var(--radius);font-size:13px">
+        <option value="">— toate lunile —</option>
+      </select>
+      <select id="nc-rap-status" style="padding:6px 10px;border:1px solid var(--gray-200);border-radius:var(--radius);font-size:13px">
+        <option value="">Toate statusurile</option>
+        <option value="deschis">Deschise</option>
+        <option value="investigare">În investigare</option>
+        <option value="inchis">Închise</option>
+      </select>
+      <button class="btn btn-primary" onclick="genRaportNC()">Generează</button>
+      <button class="btn btn-outline" onclick="printRaportNC()">&#128438; Print / PDF</button>
+    </div>
+    <div id="nc-raport-body"></div>
+    <div class="modal-footer">
+      <button class="btn btn-outline" onclick="closeModal('modal-nc-raport')">Închide</button>
+    </div>
+  </div>
+</div>
+
+<!-- ═══ MODAL EDITARE DOCUMENT SMC ════════════════════════════ -->
+<div class="modal-bg" id="modal-doc-edit" onclick="if(event.target===this)closeModal('modal-doc-edit')">
+  <div class="modal" style="max-width:500px">
+    <h3>✏️ Editare document SMC</h3>
+    <input type="hidden" id="edit-doc-id">
+    <div class="form-group" style="margin-bottom:12px">
+      <label>Cod document <span style="font-size:11px;color:var(--gray-400)">(codificare internă Invitro)</span></label>
+      <input type="text" id="edit-doc-cod" placeholder="ex. PG-4.1 sau PS-BM-IST-001">
+    </div>
+    <div class="form-group" style="margin-bottom:12px">
+      <label>Titlu document</label>
+      <input type="text" id="edit-doc-titlu">
+    </div>
+    <div class="form-row">
+      <div class="form-group">
+        <label>Ediția</label>
+        <input type="number" id="edit-doc-editie" min="1" max="99" placeholder="1">
+      </div>
+      <div class="form-group">
+        <label>Revizia</label>
+        <input type="number" id="edit-doc-revizie" min="0" max="99" placeholder="1">
+      </div>
+    </div>
+    <div class="form-row">
+      <div class="form-group">
+        <label>Data intrării în vigoare</label>
+        <input type="date" id="edit-doc-vigoare">
+      </div>
+      <div class="form-group">
+        <label>Status</label>
+        <select id="edit-doc-status">
+          <option value="existent">Existent</option>
+          <option value="prioritar">Prioritar</option>
+          <option value="elaborare">În elaborare</option>
+          <option value="lipsa">Lipsă</option>
+        </select>
+      </div>
+    </div>
+    <div class="form-row">
+      <div class="form-group">
+        <label>Tip</label>
+        <select id="edit-doc-tip">
+          <option value="MAN">MAN</option>
+          <option value="PG">PG</option>
+          <option value="PS">PS</option>
+          <option value="IL">IL</option>
+          <option value="F">F</option>
+          <option value="REG">REG</option>
+          <option value="EXT">EXT</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label>Responsabil</label>
+        <input type="text" id="edit-doc-resp" placeholder="ex. Croitoru Tatiana">
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-outline" onclick="closeModal('modal-doc-edit')">Anulare</button>
+      <button class="btn btn-primary" onclick="saveDocEdit()">&#10003; Salvează modificările</button>
+    </div>
+  </div>
+</div>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
 <!-- ═══════════════════════════════════════════════════════════
      JAVASCRIPT
@@ -6646,6 +6734,7 @@ function renderDocRow(d) {
       <button class="btn btn-outline" style="padding:3px 8px;font-size:12px" onclick="openDocAttach('${d.id}')" title="Atașamente PDF">
         📎${files.length>0?'<span style="background:var(--blue);color:#fff;border-radius:8px;padding:0 5px;font-size:10px;margin-left:2px">'+files.length+'</span>':''}
       </button>
+      <button class="btn btn-outline" style="padding:3px 7px;font-size:11px;margin-left:3px" onclick="editDoc('${d.id}')" title="Editează">✏️</button>
       <button class="btn btn-outline" style="padding:3px 7px;font-size:11px;margin-left:3px" onclick="deleteDoc('${d.id}')">🗑️</button>
     </td>
   </tr>`;
@@ -8582,8 +8671,213 @@ function renderDashboard(){
 MOLDAC_DATA = loadData('smc_moldac', {data: '2025-05-01'});
 
 
+
+// ─── RAPORT NECONFORMITATI ────────────────────────────────────
+function showRaportNC(){
+  // Populate luna options
+  const luni=[...new Set(NC_DATA.map(d=>d.data.slice(0,7)))].sort().reverse();
+  const sel=document.getElementById('nc-rap-luna');
+  if(sel){
+    sel.innerHTML='<option value="">— toate lunile —</option>'+
+      luni.map(l=>`<option value="${l}">${l}</option>`).join('');
+  }
+  document.getElementById('nc-raport-body').innerHTML='';
+  showModal('modal-nc-raport');
+}
+
+function genRaportNC(){
+  const luna=document.getElementById('nc-rap-luna').value;
+  const status=document.getElementById('nc-rap-status').value;
+  
+  let list=[...NC_DATA].sort((a,b)=>a.data.localeCompare(b.data));
+  if(luna) list=list.filter(d=>d.data.startsWith(luna));
+  if(status) list=list.filter(d=>d.status===status);
+
+  const total=list.length;
+  const deschise=list.filter(d=>d.status==='deschis').length;
+  const investigare=list.filter(d=>d.status==='investigare').length;
+  const inchise=list.filter(d=>d.status==='inchis').length;
+
+  const perioadaLabel=luna?
+    new Date(luna+'-01').toLocaleDateString('ro-RO',{month:'long',year:'numeric'}):
+    'Toate perioadele';
+
+  const tipCount={};
+  list.forEach(d=>{ tipCount[d.tip]=(tipCount[d.tip]||0)+1; });
+
+  document.getElementById('nc-raport-body').innerHTML=`
+    <div id="nc-print-area">
+      <div style="text-align:center;margin-bottom:16px;border-bottom:2px solid var(--blue);padding-bottom:12px">
+        <div style="font-size:11px;color:var(--gray-500)">Laborator de Biologie Moleculară și Genetică · Invitro Diagnostics SRL</div>
+        <div style="font-size:16px;font-weight:700;color:var(--blue);margin:6px 0">RAPORT NECONFORMITĂȚI</div>
+        <div style="font-size:13px;font-weight:600">Perioada: ${perioadaLabel}</div>
+        <div style="font-size:12px;color:var(--gray-500)">ISO 15189:2023 §8.7 · Data generării: ${fmtDate(todayStr())}</div>
+      </div>
+
+      <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:16px">
+        <div style="text-align:center;background:var(--gray-50);border-radius:var(--radius);padding:10px">
+          <div style="font-size:24px;font-weight:700;color:var(--blue)">${total}</div>
+          <div style="font-size:11px;color:var(--gray-500)">Total NC</div>
+        </div>
+        <div style="text-align:center;background:#fee2e2;border-radius:var(--radius);padding:10px">
+          <div style="font-size:24px;font-weight:700;color:var(--red)">${deschise}</div>
+          <div style="font-size:11px;color:var(--red)">Deschise</div>
+        </div>
+        <div style="text-align:center;background:#fef3c7;border-radius:var(--radius);padding:10px">
+          <div style="font-size:24px;font-weight:700;color:var(--amber)">${investigare}</div>
+          <div style="font-size:11px;color:var(--amber)">În investigare</div>
+        </div>
+        <div style="text-align:center;background:#d1fae5;border-radius:var(--radius);padding:10px">
+          <div style="font-size:24px;font-weight:700;color:var(--green)">${inchise}</div>
+          <div style="font-size:11px;color:var(--green)">Închise</div>
+        </div>
+      </div>
+
+      ${Object.keys(tipCount).length?`
+      <div style="margin-bottom:16px">
+        <div style="font-size:13px;font-weight:600;margin-bottom:8px;color:var(--gray-700)">Distribuție per tip:</div>
+        ${Object.entries(tipCount).map(([tip,cnt])=>`
+          <div style="display:flex;align-items:center;gap:8px;margin-bottom:4px">
+            <span style="font-size:12px;min-width:160px;color:var(--gray-600)">${tip}</span>
+            <div style="flex:1;background:var(--gray-100);border-radius:4px;height:8px">
+              <div style="width:${Math.round(cnt/total*100)}%;height:100%;background:var(--blue);border-radius:4px"></div>
+            </div>
+            <span style="font-size:12px;font-weight:600;min-width:20px">${cnt}</span>
+          </div>`).join('')}
+      </div>`:''}
+
+      <table style="width:100%;border-collapse:collapse;font-size:12px">
+        <thead>
+          <tr style="background:var(--gray-50)">
+            <th style="border:1px solid var(--gray-200);padding:6px 8px;text-align:left">Cod NC</th>
+            <th style="border:1px solid var(--gray-200);padding:6px 8px;text-align:left">Data</th>
+            <th style="border:1px solid var(--gray-200);padding:6px 8px;text-align:left">Tip</th>
+            <th style="border:1px solid var(--gray-200);padding:6px 8px;text-align:left">Descriere</th>
+            <th style="border:1px solid var(--gray-200);padding:6px 8px;text-align:left">Acțiune corectivă</th>
+            <th style="border:1px solid var(--gray-200);padding:6px 8px;text-align:left">Status</th>
+            <th style="border:1px solid var(--gray-200);padding:6px 8px;text-align:left">Închis la</th>
+          </tr>
+        </thead>
+        <tbody>
+          ${list.map(d=>`
+            <tr style="${d.status==='inchis'?'':'background:#fff9f9'}">
+              <td style="border:1px solid var(--gray-200);padding:5px 8px;font-family:monospace;font-weight:600;color:var(--blue)">${d.cod}</td>
+              <td style="border:1px solid var(--gray-200);padding:5px 8px">${fmtDate(d.data)}</td>
+              <td style="border:1px solid var(--gray-200);padding:5px 8px">${d.tip||'—'}</td>
+              <td style="border:1px solid var(--gray-200);padding:5px 8px;max-width:200px">${(d.descriere||'').slice(0,80)}${(d.descriere||'').length>80?'...':''}</td>
+              <td style="border:1px solid var(--gray-200);padding:5px 8px;color:var(--green)">${d.actiune_corectiva||'—'}</td>
+              <td style="border:1px solid var(--gray-200);padding:5px 8px">
+                <span style="padding:2px 8px;border-radius:4px;font-size:11px;font-weight:600;
+                  background:${d.status==='inchis'?'#d1fae5':d.status==='investigare'?'#fef3c7':'#fee2e2'};
+                  color:${d.status==='inchis'?'#065f46':d.status==='investigare'?'#92400e':'#991b1b'}">
+                  ${d.status==='inchis'?'Închisă':d.status==='investigare'?'Investigare':'Deschisă'}
+                </span>
+              </td>
+              <td style="border:1px solid var(--gray-200);padding:5px 8px">${d.data_inchidere?fmtDate(d.data_inchidere):'—'}</td>
+            </tr>`).join('')}
+        </tbody>
+      </table>
+
+      ${inchise>0?`
+      <div style="margin-top:16px;padding:10px;background:var(--gray-50);border-radius:var(--radius);font-size:12px">
+        <strong>Eficacitatea acțiunilor corective:</strong> ${Math.round(inchise/total*100)}% din NC-uri au fost închise cu acțiune corectivă implementată.
+      </div>`:''}
+
+      <div style="margin-top:24px;display:grid;grid-template-columns:1fr 1fr 1fr;gap:32px">
+        <div style="text-align:center">
+          <div style="border-top:1px solid #374151;padding-top:8px;margin-top:48px;font-size:12px">
+            <div style="font-weight:600">Croitoru Tatiana</div><div style="color:var(--gray-500)">Responsabil Managementul Calității</div>
+          </div>
+        </div>
+        <div style="text-align:center">
+          <div style="border-top:1px solid #374151;padding-top:8px;margin-top:48px;font-size:12px">
+            <div style="font-weight:600">Rotari Ion</div><div style="color:var(--gray-500)">Șef laborator</div>
+          </div>
+        </div>
+        <div style="text-align:center">
+          <div style="border-top:1px solid #374151;padding-top:8px;margin-top:48px;font-size:12px">
+            <div style="font-weight:600">Data: ${fmtDate(todayStr())}</div>
+          </div>
+        </div>
+      </div>
+    </div>`;
+}
+
+function printRaportNC(){
+  const el=document.getElementById('nc-print-area');
+  if(!el||!el.innerHTML.trim()){alert('Generați mai întâi raportul!');return;}
+  const win=window.open('','_blank');
+  win.document.write('<html><head><title>Raport NC</title><style>body{font-family:Arial,sans-serif;margin:15mm;font-size:12px}table{width:100%;border-collapse:collapse}th,td{border:1px solid #ccc;padding:5px 8px}@media print{button{display:none}}</style></head><body>'+el.innerHTML+'</body></html>');
+  win.document.close();
+  setTimeout(()=>win.print(),500);
+}
+
+
+
+// ─── EDITARE DOCUMENT SMC ─────────────────────────────────────
+function editDoc(id){
+  const d = DOCS.find(x=>x.id===id);
+  if(!d) return;
+  document.getElementById('edit-doc-id').value = id;
+  document.getElementById('edit-doc-cod').value = d.cod||'';
+  document.getElementById('edit-doc-titlu').value = d.titlu||'';
+  document.getElementById('edit-doc-editie').value = d.editie||1;
+  document.getElementById('edit-doc-revizie').value = d.revizie||1;
+  document.getElementById('edit-doc-vigoare').value = d.data_vigoare||'';
+  document.getElementById('edit-doc-status').value = d.status||'existent';
+  document.getElementById('edit-doc-tip').value = d.tip||'PG';
+  document.getElementById('edit-doc-resp').value = d.responsabil||'';
+  showModal('modal-doc-edit');
+}
+
+function saveDocEdit(){
+  const id = document.getElementById('edit-doc-id').value;
+  const newCod = document.getElementById('edit-doc-cod').value.trim();
+  if(!newCod){ alert('Codul nu poate fi gol!'); return; }
+
+  const d = DOCS.find(x=>x.id===id);
+  if(!d) return;
+
+  // Check cod duplicate (only if cod changed)
+  if(newCod !== d.cod && DOCS.find(x=>x.cod===newCod && x.id!==id)){
+    alert('Codul ' + newCod + ' există deja la alt document!');
+    return;
+  }
+
+  // Update DOC_FILES key if cod/id changes
+  if(newCod !== d.cod && DOC_FILES[id]){
+    DOC_FILES[newCod] = DOC_FILES[id];
+    delete DOC_FILES[id];
+    saveData('smc_doc_files', DOC_FILES);
+  }
+
+  // Update the document
+  d.cod = newCod;
+  d.id = newCod; // sync id to cod
+  d.titlu = document.getElementById('edit-doc-titlu').value.trim();
+  d.editie = parseInt(document.getElementById('edit-doc-editie').value)||1;
+  d.revizie = parseInt(document.getElementById('edit-doc-revizie').value)||0;
+  d.data_vigoare = document.getElementById('edit-doc-vigoare').value;
+  d.status = document.getElementById('edit-doc-status').value;
+  d.tip = document.getElementById('edit-doc-tip').value;
+  d.responsabil = document.getElementById('edit-doc-resp').value;
+  d.ts = new Date().toISOString();
+
+  saveDocs();
+  if(typeof upsertRecord==='function') upsertRecord('docs', d).catch(e=>{});
+
+  closeModal('modal-doc-edit');
+  renderDocs();
+  renderDashboard();
+  showToast('Document actualizat: ' + d.cod);
+}
+
+
 // ─── INIT
 initSupabase(); // loads from Supabase then renders
+
+
+
 
 
 
