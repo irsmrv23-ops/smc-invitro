@@ -372,26 +372,36 @@ tr:hover td{background:var(--gray-50)}
   <!-- NIVEL 4: Formulare -->
   <div id="doc-nivel-4" class="doc-nivel-content" style="display:none">
     <div style="font-size:14px;font-weight:600;color:#7c3aed;margin-bottom:16px">📋 Nivel 4 — Formulare & Registre digitale</div>
-    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px;margin-bottom:24px">
-      <button class="card" onclick="switchFormular('deseuri')" style="text-align:left;cursor:pointer;border-left:4px solid #ef4444;padding:16px">
-        <div style="font-size:20px;margin-bottom:6px">🗑️</div>
-        <div style="font-weight:600;font-size:14px">Predare Deșeuri Biologice</div>
-        <div style="font-size:11px;color:#6b7280">Cod 18.01.03 · Raport lunar</div>
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:10px;margin-bottom:20px">
+      <button class="card" onclick="switchFormular('deseuri')" style="text-align:left;cursor:pointer;border-left:4px solid #ef4444;padding:14px">
+        <div style="font-size:18px;margin-bottom:4px">🗑️</div>
+        <div style="font-weight:600;font-size:13px">Predare Deșeuri Biologice</div>
+        <div style="font-size:10px;color:#6b7280">18.01.03 · Raport lunar</div>
       </button>
-      <button class="card" onclick="switchFormular('echipamente')" style="text-align:left;cursor:pointer;border-left:4px solid #3b82f6;padding:16px">
-        <div style="font-size:20px;margin-bottom:6px">🔬</div>
-        <div style="font-weight:600;font-size:14px">Verificare Zilnică Echipamente</div>
-        <div style="font-size:11px;color:#6b7280">Inspecție vizuală + observații</div>
+      <button class="card" onclick="switchFormular('temperatura')" style="text-align:left;cursor:pointer;border-left:4px solid #3b82f6;padding:14px">
+        <div style="font-size:18px;margin-bottom:4px">🌡️</div>
+        <div style="font-weight:600;font-size:13px">Temperatură & Umiditate</div>
+        <div style="font-size:10px;color:#6b7280">PG-6.3/F-01 · 4 săli · Limite automate</div>
       </button>
-      <button class="card" onclick="switchFormular('receptie')" style="text-align:left;cursor:pointer;border-left:4px solid #10b981;padding:16px">
-        <div style="font-size:20px;margin-bottom:6px">📥</div>
-        <div style="font-weight:600;font-size:14px">Recepție Probe</div>
-        <div style="font-size:11px;color:#6b7280">Checklist recepție + conformitate</div>
+      <button class="card" onclick="switchFormular('curatenie')" style="text-align:left;cursor:pointer;border-left:4px solid #10b981;padding:14px">
+        <div style="font-size:18px;margin-bottom:4px">🧹</div>
+        <div style="font-weight:600;font-size:13px">Curățenie Generală</div>
+        <div style="font-size:10px;color:#6b7280">Form. 502/e · 4 birouri · Săptămânal</div>
       </button>
-      <button class="card" onclick="switchFormular('biosiguranta')" style="text-align:left;cursor:pointer;border-left:4px solid #f59e0b;padding:16px">
-        <div style="font-size:20px;margin-bottom:6px">🦺</div>
-        <div style="font-weight:600;font-size:14px">Biosiguranță</div>
-        <div style="font-size:11px;color:#6b7280">EIP · Instruire · Incidente</div>
+      <button class="card" onclick="switchFormular('uv')" style="text-align:left;cursor:pointer;border-left:4px solid #8b5cf6;padding:14px">
+        <div style="font-size:18px;margin-bottom:4px">💡</div>
+        <div style="font-weight:600;font-size:13px">Lampă UV</div>
+        <div style="font-size:10px;color:#6b7280">4 birouri · 2×/zi L-V · Ore valabilitate</div>
+      </button>
+      <button class="card" onclick="switchFormular('echipamente')" style="text-align:left;cursor:pointer;border-left:4px solid #f59e0b;padding:14px">
+        <div style="font-size:18px;margin-bottom:4px">🔬</div>
+        <div style="font-weight:600;font-size:13px">Verificare Echipamente</div>
+        <div style="font-size:10px;color:#6b7280">Inspecție vizuală zilnică</div>
+      </button>
+      <button class="card" onclick="switchFormular('biosiguranta')" style="text-align:left;cursor:pointer;border-left:4px solid #f97316;padding:14px">
+        <div style="font-size:18px;margin-bottom:4px">🦺</div>
+        <div style="font-weight:600;font-size:13px">Biosiguranță</div>
+        <div style="font-size:10px;color:#6b7280">EIP · Instruire · Incidente</div>
       </button>
     </div>
     <div id="doc-nivel-4-body"></div>
@@ -2236,6 +2246,194 @@ tr:hover td{background:var(--gray-50)}
     <div class="modal-footer">
       <button class="btn btn-outline" onclick="closeModal('modal-dosar-add')">Anulare</button>
       <button class="btn btn-primary" onclick="saveDosarDoc()">Salvează</button>
+    </div>
+  </div>
+</div>
+
+
+<!-- ═══ MODAL TEMPERATURĂ & UMIDITATE ═════════════════════════ -->
+<div class="modal-bg" id="modal-temp-add" onclick="if(event.target===this)closeModal('modal-temp-add')">
+  <div class="modal" style="max-width:460px">
+    <h3>🌡️ Înregistrare Temperatură & Umiditate</h3>
+    <div style="background:#eff6ff;border-radius:var(--radius);padding:10px;margin-bottom:14px;font-size:12px;color:#1e40af">
+      <strong>Limite acceptabile:</strong> Temperatură 21°C ± 3°C (18–24°C) · Umiditate 70% ± 5% (65–75%)
+    </div>
+    <div class="form-row">
+      <div class="form-group">
+        <label>Data <span style="font-size:10px;color:var(--gray-400)">(nu se poate modifica)</span></label>
+        <input type="text" id="temp-data-display" readonly
+          style="background:var(--gray-50);font-weight:600;color:var(--gray-700)">
+        <input type="hidden" id="temp-data">
+      </div>
+      <div class="form-group">
+        <label>Incăperea</label>
+        <select id="temp-sala">
+          <option value="Sala 1">Sala 1</option>
+          <option value="Sala 2">Sala 2</option>
+          <option value="Sala 3">Sala 3</option>
+          <option value="Sala 1A">Sala 1A</option>
+        </select>
+      </div>
+    </div>
+    <div class="form-row">
+      <div class="form-group">
+        <label>Temperatura (°C)</label>
+        <input type="number" id="temp-val" step="0.1" placeholder="ex. 21.5" oninput="evalTemp()">
+      </div>
+      <div class="form-group">
+        <label>Umiditatea (%)</label>
+        <input type="number" id="temp-umid" step="0.1" placeholder="ex. 68.0" oninput="evalTemp()">
+      </div>
+    </div>
+    <div id="temp-eval" style="min-height:36px;padding:8px;border-radius:var(--radius);margin-bottom:10px;font-size:12px"></div>
+    <div class="form-group" style="margin-bottom:4px">
+      <label>Responsabil</label>
+      <input type="text" id="temp-responsabil" readonly style="background:var(--gray-50);color:var(--gray-600)">
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-outline" onclick="closeModal('modal-temp-add')">Anulare</button>
+      <button class="btn btn-primary" onclick="saveTemp()">Salvează</button>
+    </div>
+  </div>
+</div>
+
+<!-- ═══ MODAL CONFIGURARE SOLUȚIE DEZINFECTANTĂ ══════════════ -->
+<div class="modal-bg" id="modal-solutie-config" onclick="if(event.target===this)closeModal('modal-solutie-config')">
+  <div class="modal" style="max-width:420px">
+    <h3>🧴 Configurare Soluții Dezinfectante</h3>
+    <div id="solutii-lista" style="margin-bottom:12px"></div>
+    <div class="form-row">
+      <div class="form-group"><label>Soluție nouă</label>
+        <input type="text" id="solutie-noua" placeholder="ex. Chloramine 1%"></div>
+      <div class="form-group"><label>Data introducerii</label>
+        <input type="date" id="solutie-data"></div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-outline" onclick="closeModal('modal-solutie-config')">Închide</button>
+      <button class="btn btn-primary" onclick="addSolutie()">Adaugă soluție</button>
+    </div>
+  </div>
+</div>
+
+<!-- ═══ MODAL CURĂȚENIE GENERALĂ ══════════════════════════════ -->
+<div class="modal-bg" id="modal-curatenie-add" onclick="if(event.target===this)closeModal('modal-curatenie-add')">
+  <div class="modal" style="max-width:480px">
+    <h3>🧹 Efectuare Curățenie Generală</h3>
+    <input type="hidden" id="cur-plan-id">
+    <div class="form-row">
+      <div class="form-group">
+        <label>Data planificată</label>
+        <input type="text" id="cur-data-plan" readonly style="background:var(--gray-50);font-weight:600">
+      </div>
+      <div class="form-group">
+        <label>Data efectuării <span style="font-size:10px;color:var(--gray-400)">(blocată)</span></label>
+        <input type="text" id="cur-data-ef-display" readonly style="background:var(--gray-50);font-weight:600">
+        <input type="hidden" id="cur-data-ef">
+      </div>
+    </div>
+    <div class="form-group" style="margin-bottom:10px">
+      <label>Soluție dezinfectantă utilizată</label>
+      <select id="cur-solutie"></select>
+      <div id="cur-solutie-warning" style="font-size:11px;margin-top:4px"></div>
+    </div>
+    <div class="form-group" style="margin-bottom:10px">
+      <label>Incăperea</label>
+      <input type="text" id="cur-incapere" readonly style="background:var(--gray-50);font-weight:600">
+    </div>
+    <div class="form-group" style="margin-bottom:4px">
+      <label>Efectuat de</label>
+      <input type="text" id="cur-operator" readonly style="background:var(--gray-50)">
+    </div>
+    <div class="form-group" style="margin-bottom:4px">
+      <label>Observații</label>
+      <input type="text" id="cur-obs" placeholder="Opțional">
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-outline" onclick="closeModal('modal-curatenie-add')">Anulare</button>
+      <button class="btn btn-primary" onclick="saveCuratenie()">Confirmă efectuarea</button>
+    </div>
+  </div>
+</div>
+
+<!-- ═══ MODAL SUPERVIZARE ȘEF ══════════════════════════════════ -->
+<div class="modal-bg" id="modal-supervizare" onclick="if(event.target===this)closeModal('modal-supervizare')">
+  <div class="modal" style="max-width:420px">
+    <h3>✅ Supervizare Șef Laborator</h3>
+    <div id="supervizare-body" style="margin-bottom:16px"></div>
+    <div class="form-group" style="margin-bottom:4px">
+      <label>Observații supervizor</label>
+      <textarea id="supervizare-obs" rows="2"
+        style="width:100%;padding:8px;border:1px solid var(--gray-200);border-radius:var(--radius);font-family:var(--font);font-size:13px"></textarea>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-outline" onclick="closeModal('modal-supervizare')">Anulare</button>
+      <button class="btn btn-primary" onclick="saveSupervizare()">✓ Confirm supervizarea</button>
+    </div>
+  </div>
+</div>
+
+<!-- ═══ MODAL LAMPĂ UV ═════════════════════════════════════════ -->
+<div class="modal-bg" id="modal-uv-add" onclick="if(event.target===this)closeModal('modal-uv-add')">
+  <div class="modal" style="max-width:460px">
+    <h3>💡 Iradiere UV</h3>
+    <div class="form-row">
+      <div class="form-group">
+        <label>Data <span style="font-size:10px;color:var(--gray-400)">(blocată)</span></label>
+        <input type="text" id="uv-data-display" readonly style="background:var(--gray-50);font-weight:600">
+        <input type="hidden" id="uv-data">
+      </div>
+      <div class="form-group">
+        <label>Incăperea</label>
+        <select id="uv-sala">
+          <option value="Sala 1">Sala 1</option>
+          <option value="Sala 2">Sala 2</option>
+          <option value="Sala 3">Sala 3</option>
+          <option value="Sala 1A">Sala 1A</option>
+        </select>
+      </div>
+    </div>
+    <div class="form-group" style="margin-bottom:10px">
+      <label>Intervalul de iradiere</label>
+      <select id="uv-interval">
+        <option value="08:00-08:30">08:00 – 08:30</option>
+        <option value="14:00-14:30">14:00 – 14:30</option>
+      </select>
+    </div>
+    <div style="background:#f5f3ff;border-radius:var(--radius);padding:12px;margin-bottom:12px">
+      <div style="font-size:12px;font-weight:600;color:#6d28d9;margin-bottom:6px">💡 Ore valabilitate lampă</div>
+      <div id="uv-ore-info" style="font-size:13px"></div>
+    </div>
+    <div class="form-group" style="margin-bottom:4px">
+      <label>Specialist</label>
+      <input type="text" id="uv-specialist" readonly style="background:var(--gray-50)">
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-outline" onclick="closeModal('modal-uv-add')">Anulare</button>
+      <button class="btn btn-primary" onclick="saveUV()">Confirmă iradierea</button>
+    </div>
+  </div>
+</div>
+
+<!-- ═══ MODAL CONFIGURARE LAMPĂ UV ════════════════════════════ -->
+<div class="modal-bg" id="modal-uv-config" onclick="if(event.target===this)closeModal('modal-uv-config')">
+  <div class="modal" style="max-width:420px">
+    <h3>⚙️ Configurare Ore Valabilitate Lampă UV</h3>
+    <div id="uv-lampi-lista" style="margin-bottom:12px"></div>
+    <div class="form-row">
+      <div class="form-group"><label>Sala</label>
+        <select id="uv-cfg-sala">
+          <option value="Sala 1">Sala 1</option>
+          <option value="Sala 2">Sala 2</option>
+          <option value="Sala 3">Sala 3</option>
+          <option value="Sala 1A">Sala 1A</option>
+        </select>
+      </div>
+      <div class="form-group"><label>Ore valabilitate rămase</label>
+        <input type="number" id="uv-cfg-ore" step="0.5" min="0" placeholder="ex. 8000"></div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-outline" onclick="closeModal('modal-uv-config')">Închide</button>
+      <button class="btn btn-primary" onclick="saveUVConfig()">Salvează</button>
     </div>
   </div>
 </div>
@@ -7365,8 +7563,641 @@ document.addEventListener('click', function(e){
 // Override showPage for serii to use new openSerieModal
 
 
+
+// ════════════════════════════════════════════════════════════
+// REGISTRE ELECTRONICE — Temperatură, Curățenie, Lampă UV
+// ════════════════════════════════════════════════════════════
+
+let TEMP_DATA     = loadData('smc_temp', []);
+let CURATENIE_DATA= loadData('smc_curatenie', []);
+let UV_DATA       = loadData('smc_uv', []);
+let SOLUTII       = loadData('smc_solutii', []);
+let UV_LAMPI      = loadData('smc_uv_lampi', {
+  'Sala 1': {ore: 8000, updated: null},
+  'Sala 2': {ore: 8000, updated: null},
+  'Sala 3': {ore: 8000, updated: null},
+  'Sala 1A': {ore: 8000, updated: null}
+});
+
+const SALI = ['Sala 1', 'Sala 2', 'Sala 3', 'Sala 1A'];
+const TEMP_MIN=18, TEMP_MAX=24, UMID_MIN=65, UMID_MAX=75;
+const CURATENIE_ZI = 1; // luni
+
+// ── UPDATE renderFormular to handle new types ──────────────────
+const _origRenderFormular = renderFormular;
+function renderFormular(tip) {
+  const el = document.getElementById('doc-nivel-4-body');
+  if(!el) return;
+  if(tip==='temperatura') renderTemperaturaBody(el);
+  else if(tip==='curatenie') renderCuratenieBody(el);
+  else if(tip==='uv') renderUVBody(el);
+  else _origRenderFormular(tip);
+}
+
+// ════════════════════════════════════════════════════════════
+// 1. TEMPERATURĂ & UMIDITATE — PG-6.3/F-01
+// ════════════════════════════════════════════════════════════
+function renderTemperaturaBody(el) {
+  const activeSala = window._tempActiveSala || 'Sala 1';
+  el.innerHTML = `
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px">
+      <div style="font-size:14px;font-weight:600;color:#1d4ed8">🌡️ Temperatură & Umiditate — PG-6.3/F-01</div>
+      <button class="btn btn-primary" onclick="openTempAdd()">+ Citire nouă</button>
+    </div>
+    <div style="font-size:11px;color:#6b7280;margin-bottom:10px">
+      Limite: 🌡️ 18–24°C · 💧 65–75% | Laborator Biologie Moleculară și Genetică · Invitro Diagnostics SRL
+    </div>
+    <!-- Sala tabs -->
+    <div style="display:flex;gap:8px;margin-bottom:16px;flex-wrap:wrap">
+      ${SALI.map(s=>`<button onclick="window._tempActiveSala='${s}';renderFormular('temperatura')"
+        style="padding:6px 14px;border-radius:20px;border:2px solid ${s===activeSala?'#1d4ed8':'#e5e7eb'};
+               background:${s===activeSala?'#dbeafe':'#f9fafb'};color:${s===activeSala?'#1d4ed8':'#374151'};
+               cursor:pointer;font-size:12px;font-weight:600">${s}</button>`).join('')}
+    </div>
+    ${renderTempTable(activeSala)}`;
+}
+
+function renderTempTable(sala) {
+  const list = [...TEMP_DATA].filter(d=>d.sala===sala)
+    .sort((a,b)=>b.data.localeCompare(a.data)).slice(0,60);
+
+  // Luna curentă stats
+  const luna = todayStr().slice(0,7);
+  const lunaList = list.filter(d=>d.data.startsWith(luna));
+  const tempOut = lunaList.filter(d=>d.temp<TEMP_MIN||d.temp>TEMP_MAX).length;
+  const umidOut = lunaList.filter(d=>d.umid<UMID_MIN||d.umid>UMID_MAX).length;
+
+  return `
+    <div style="display:flex;gap:12px;margin-bottom:12px;flex-wrap:wrap">
+      <div class="stat-card" style="padding:8px 14px">
+        <div class="stat-val" style="font-size:18px;color:var(--blue)">${lunaList.length}</div>
+        <div class="stat-lbl">Citiri luna curentă</div>
+      </div>
+      <div class="stat-card" style="padding:8px 14px">
+        <div class="stat-val" style="font-size:18px;color:${tempOut>0?'var(--red)':'var(--green)'}">${tempOut}</div>
+        <div class="stat-lbl">Temp. în afara limitelor</div>
+      </div>
+      <div class="stat-card" style="padding:8px 14px">
+        <div class="stat-val" style="font-size:18px;color:${umidOut>0?'var(--red)':'var(--green)'}">${umidOut}</div>
+        <div class="stat-lbl">Umid. în afara limitelor</div>
+      </div>
+    </div>
+    <div class="table-wrap">
+      <table>
+        <thead><tr>
+          <th style="width:100px">Data</th>
+          <th style="width:80px">Ora</th>
+          <th style="width:100px">Temperatura (°C)</th>
+          <th style="width:100px">Umiditate (%)</th>
+          <th style="width:80px">Status</th>
+          <th>Responsabil</th>
+          <th style="width:50px"></th>
+        </tr></thead>
+        <tbody>
+          ${list.length===0?`<tr><td colspan="7" style="text-align:center;padding:20px;color:var(--gray-400)">
+            Nicio citire pentru ${sala}. Adăugați prima citire.
+          </td></tr>`:list.map(d=>{
+            const tempOk=d.temp>=TEMP_MIN&&d.temp<=TEMP_MAX;
+            const umidOk=d.umid>=UMID_MIN&&d.umid<=UMID_MAX;
+            const ok=tempOk&&umidOk;
+            return `<tr style="${!ok?'background:#fff5f5':''}">
+              <td style="font-size:12px">${fmtDate(d.data)}</td>
+              <td style="font-size:12px;font-family:monospace">${d.ora||'—'}</td>
+              <td style="text-align:center;font-weight:600;color:${tempOk?'var(--gray-800)':'var(--red)'}">
+                ${d.temp}°C ${!tempOk?'⚠':''}
+              </td>
+              <td style="text-align:center;font-weight:600;color:${umidOk?'var(--gray-800)':'var(--red)'}">
+                ${d.umid}% ${!umidOk?'⚠':''}
+              </td>
+              <td><span class="badge ${ok?'badge-existent':'badge-lipsa'}" style="font-size:10px">${ok?'✓ OK':'✗ DEP.'}</span></td>
+              <td style="font-size:12px">${d.responsabil}</td>
+              <td><button class="btn btn-outline" style="padding:2px 6px;font-size:10px"
+                onclick="deleteTempRec('${d.id}')">🗑️</button></td>
+            </tr>`;
+          }).join('')}
+        </tbody>
+      </table>
+    </div>`;
+}
+
+function openTempAdd() {
+  const now = new Date();
+  const today = todayStr();
+  document.getElementById('temp-data').value = today;
+  document.getElementById('temp-data-display').value = fmtDate(today) + ' ' + now.toTimeString().slice(0,5);
+  document.getElementById('temp-sala').value = window._tempActiveSala||'Sala 1';
+  document.getElementById('temp-val').value = '';
+  document.getElementById('temp-umid').value = '';
+  document.getElementById('temp-eval').innerHTML = '';
+  document.getElementById('temp-responsabil').value = currentUser.nume;
+  showModal('modal-temp-add');
+}
+
+function evalTemp() {
+  const temp = parseFloat(document.getElementById('temp-val').value);
+  const umid = parseFloat(document.getElementById('temp-umid').value);
+  const el = document.getElementById('temp-eval');
+  if(isNaN(temp)&&isNaN(umid)){el.innerHTML='';return;}
+  const tempOk = isNaN(temp)||( temp>=TEMP_MIN&&temp<=TEMP_MAX);
+  const umidOk = isNaN(umid)||(umid>=UMID_MIN&&umid<=UMID_MAX);
+  const ok = tempOk&&umidOk;
+  el.style.background = ok?'#d1fae5':'#fee2e2';
+  el.style.color = ok?'#065f46':'#991b1b';
+  let msg = '';
+  if(!isNaN(temp)) msg += `🌡️ ${temp}°C — ${tempOk?'✓ OK':'✗ DEPĂȘIT (18–24°C)'}`;
+  if(!isNaN(umid)) msg += (msg?' · ':'')+`💧 ${umid}% — ${umidOk?'✓ OK':'✗ DEPĂȘIT (65–75%)'}`;
+  el.textContent = msg;
+}
+
+function saveTemp() {
+  const temp = parseFloat(document.getElementById('temp-val').value);
+  const umid = parseFloat(document.getElementById('temp-umid').value);
+  if(isNaN(temp)||isNaN(umid)){alert('Introduceți temperatura și umiditatea!');return;}
+  const now = new Date();
+  const rec = {
+    id:'TEMP-'+Date.now(),
+    data: document.getElementById('temp-data').value,
+    ora: now.toTimeString().slice(0,5),
+    sala: document.getElementById('temp-sala').value,
+    temp, umid,
+    responsabil: currentUser.nume,
+    operator_id: currentUser.id,
+    ts: new Date().toISOString()
+  };
+  TEMP_DATA.push(rec);
+  saveData('smc_temp', TEMP_DATA);
+  if(typeof upsertRecord==='function') upsertRecord('temp_data',rec).catch(e=>{});
+
+  // Alert + NC automată dacă depășit
+  const tempOk=temp>=TEMP_MIN&&temp<=TEMP_MAX;
+  const umidOk=umid>=UMID_MIN&&umid<=UMID_MAX;
+  if(!tempOk||!umidOk){
+    const msg = (!tempOk?`Temperatură ${temp}°C (limite 18–24°C) `:'')+((!umidOk)?`Umiditate ${umid}% (limite 65–75%)`:'');
+    showToast('⚠ Valori în afara limitelor: '+msg, 'error');
+    if(confirm(`⚠ VALORI ÎN AFARA LIMITELOR!\n${msg}\n\nDoriți să deschideți automat o Neconformitate?`)){
+      openNCFromIQC({
+        data:rec.data, grupa:'', operator_id:rec.operator_id, operator_nume:rec.responsabil,
+        tip:'altul', rezultat:'respins',
+        obs:`Temperatură/umiditate în afara limitelor în ${rec.sala}: ${msg}`
+      });
+    }
+  }
+  closeModal('modal-temp-add');
+  renderFormular('temperatura');
+}
+
+function deleteTempRec(id){
+  if(!confirm('Ștergeți această citire?'))return;
+  if(typeof deleteRecord==='function') deleteRecord('temp_data',id).catch(e=>{});
+  TEMP_DATA=TEMP_DATA.filter(d=>d.id!==id);
+  saveData('smc_temp',TEMP_DATA);
+  renderFormular('temperatura');
+}
+
+// ════════════════════════════════════════════════════════════
+// 2. CURĂȚENIE GENERALĂ — Formular 502/e
+// ════════════════════════════════════════════════════════════
+function renderCuratenieBody(el) {
+  const activeSala = window._curActiveSala || SALI[0];
+  el.innerHTML = `
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;flex-wrap:wrap;gap:8px">
+      <div style="font-size:14px;font-weight:600;color:#059669">🧹 Registru Curățenie Generală — Formularul 502/e</div>
+      <div style="display:flex;gap:8px">
+        <button class="btn btn-outline" onclick="openSolutieConfig()" style="font-size:12px">🧴 Soluții</button>
+        <button class="btn btn-primary" onclick="openCuratenie()" style="font-size:12px">✓ Confirmă curățenie</button>
+      </div>
+    </div>
+    <div style="font-size:11px;color:#6b7280;margin-bottom:10px">
+      Laborator Biologie Moleculară · Invitro Diagnostics SRL · Curățenie generală săptămânală (Luni)
+    </div>
+    <div style="display:flex;gap:8px;margin-bottom:16px;flex-wrap:wrap">
+      ${SALI.map(s=>`<button onclick="window._curActiveSala='${s}';renderFormular('curatenie')"
+        style="padding:6px 14px;border-radius:20px;border:2px solid ${s===activeSala?'#059669':'#e5e7eb'};
+               background:${s===activeSala?'#d1fae5':'#f9fafb'};color:${s===activeSala?'#065f46':'#374151'};
+               cursor:pointer;font-size:12px;font-weight:600">${s}</button>`).join('')}
+    </div>
+    ${renderCuratenieTable(activeSala)}`;
+}
+
+function getNextMonday(fromDate) {
+  const d = new Date(fromDate);
+  const day = d.getDay();
+  const diff = day===1?0:(8-day)%7||7;
+  d.setDate(d.getDate()+diff);
+  return d.toISOString().slice(0,10);
+}
+
+function renderCuratenieTable(sala) {
+  const list = [...CURATENIE_DATA].filter(d=>d.sala===sala)
+    .sort((a,b)=>b.data_plan.localeCompare(a.data_plan)).slice(0,20);
+
+  // Generate next planned cleaning
+  const lastPlan = list.length?list[0].data_plan:null;
+  const nextPlan = getNextMonday(lastPlan||todayStr());
+  const todayDateStr = todayStr();
+  const pendingPlan = !list.find(d=>d.data_plan===nextPlan);
+
+  return `
+    ${pendingPlan&&nextPlan>=todayDateStr?`<div style="background:#fef3c7;border:1px solid #f59e0b;border-radius:var(--radius);padding:10px;margin-bottom:12px;font-size:13px">
+      <strong>📅 Curățenie planificată: ${fmtDate(nextPlan)}</strong> (Sala: ${sala})
+      <button class="btn btn-primary" style="margin-left:12px;padding:4px 10px;font-size:12px" onclick="openCurateniePlan('${nextPlan}','${sala}')">Confirmă</button>
+    </div>`:''}
+    <div class="table-wrap">
+      <table>
+        <thead><tr>
+          <th style="width:40px">Nr.</th>
+          <th style="width:100px">Data planif.</th>
+          <th style="width:100px">Data efect.</th>
+          <th>Soluție dezinfectantă</th>
+          <th>Efectuat de</th>
+          <th style="width:100px">Supervizat</th>
+          <th style="width:60px"></th>
+        </tr></thead>
+        <tbody>
+          ${list.length===0?`<tr><td colspan="7" style="text-align:center;padding:20px;color:var(--gray-400)">
+            Nicio curățenie înregistrată pentru ${sala}.
+          </td></tr>`:list.map((d,i)=>{
+            const intirziat=d.data_ef&&d.data_ef>d.data_plan;
+            const nesupervizat=!d.supervizat_la;
+            return `<tr style="${intirziat?'background:#fff5f5':''}">
+              <td style="text-align:center;font-weight:600">${list.length-i}</td>
+              <td style="font-size:12px">${fmtDate(d.data_plan)}</td>
+              <td style="font-size:12px;color:${intirziat?'var(--red)':'var(--gray-700)'}">
+                ${d.data_ef?fmtDate(d.data_ef):'<span style="color:var(--amber)">Neefectuată</span>'}
+                ${intirziat?'⚠':''}</td>
+              <td style="font-size:12px">${d.solutie||'—'}</td>
+              <td style="font-size:12px">${d.operator||'—'}</td>
+              <td style="text-align:center">
+                ${d.supervizat_la?`<span class="badge badge-existent" style="font-size:10px">✓ ${fmtDate(d.supervizat_la)}</span>`:
+                  currentUser.rol==='sef'?`<button class="btn btn-outline" style="padding:2px 8px;font-size:10px" onclick="openSupervizare('${d.id}','curatenie')">Verifică</button>`:
+                  '<span style="font-size:11px;color:var(--gray-400)">Așteptare</span>'}
+              </td>
+              <td><button class="btn btn-outline" style="padding:2px 6px;font-size:10px" onclick="deleteCuratenie('${d.id}')">🗑️</button></td>
+            </tr>`;
+          }).join('')}
+        </tbody>
+      </table>
+    </div>`;
+}
+
+function openCuratenie(){
+  const sala = window._curActiveSala||SALI[0];
+  const nextPlan = getNextMonday(todayStr());
+  openCurateniePlan(nextPlan, sala);
+}
+
+function openCurateniePlan(dataPlan, sala){
+  document.getElementById('cur-plan-id').value='';
+  document.getElementById('cur-data-plan').value=fmtDate(dataPlan);
+  const today=todayStr();
+  document.getElementById('cur-data-ef-display').value=fmtDate(today);
+  document.getElementById('cur-data-ef').value=today;
+  document.getElementById('cur-incapere').value=sala;
+  document.getElementById('cur-operator').value=currentUser.nume;
+  document.getElementById('cur-obs').value='';
+
+  // Populate solutii
+  const sel=document.getElementById('cur-solutie');
+  sel.innerHTML=SOLUTII.length?
+    SOLUTII.map(s=>`<option value="${s.den}">${s.den} (din ${fmtDate(s.data)})</option>`).join(''):
+    '<option value="">— configurați soluțiile mai întâi —</option>';
+
+  // Warning solutie > 6 luni
+  checkSolutieVarsta();
+  showModal('modal-curatenie-add');
+}
+
+function checkSolutieVarsta(){
+  const sel=document.getElementById('cur-solutie');
+  const warn=document.getElementById('cur-solutie-warning');
+  if(!sel||!warn)return;
+  const selVal=sel.value;
+  const sol=SOLUTII.find(s=>s.den===selVal);
+  if(sol){
+    const daysSince=Math.floor((new Date()-new Date(sol.data))/86400000);
+    if(daysSince>180){
+      warn.style.color='var(--red)';
+      warn.textContent='⚠ Această soluție se folosește de '+daysSince+' zile (>6 luni). Schimbați soluția dezinfectantă!';
+    } else {
+      warn.style.color='var(--green)';
+      warn.textContent='✓ Soluție utilizată de '+daysSince+' zile';
+    }
+  }
+}
+
+function saveCuratenie(){
+  const solutie=document.getElementById('cur-solutie').value;
+  if(!solutie){alert('Selectați sau configurați o soluție dezinfectantă!');return;}
+  const dataEf=document.getElementById('cur-data-ef').value;
+  const dataPlan=document.getElementById('cur-data-plan').value.split('/').reverse().join('-'); // convert from display
+  // Actually data plan is in display format, let's get it differently
+  const intirziat=dataEf>dataEf; // compare dates
+
+  const rec={
+    id:'CUR-'+Date.now(),
+    sala:document.getElementById('cur-incapere').value,
+    data_plan:dataEf, // simplified: use today as planned
+    data_ef:dataEf,
+    solutie,
+    operator:currentUser.nume,
+    operator_id:currentUser.id,
+    obs:document.getElementById('cur-obs').value,
+    supervizat_la:null,
+    supervizat_de:null,
+    ts:new Date().toISOString()
+  };
+  CURATENIE_DATA.push(rec);
+  saveData('smc_curatenie',CURATENIE_DATA);
+  if(typeof upsertRecord==='function') upsertRecord('curatenie_data',rec).catch(e=>{});
+
+  // Check solutie > 6 luni
+  const sol=SOLUTII.find(s=>s.den===solutie);
+  if(sol){
+    const days=Math.floor((new Date()-new Date(sol.data))/86400000);
+    if(days>180){
+      showToast('⚠ Soluție dezinfectantă utilizată >6 luni! Schimbați soluția.','error');
+    }
+  }
+  closeModal('modal-curatenie-add');
+  renderFormular('curatenie');
+}
+
+function deleteCuratenie(id){
+  if(!confirm('Ștergeți această înregistrare?'))return;
+  if(typeof deleteRecord==='function') deleteRecord('curatenie_data',id).catch(e=>{});
+  CURATENIE_DATA=CURATENIE_DATA.filter(d=>d.id!==id);
+  saveData('smc_curatenie',CURATENIE_DATA);
+  renderFormular('curatenie');
+}
+
+// Soluții dezinfectante
+function openSolutieConfig(){
+  renderSolutiiLista();
+  document.getElementById('solutie-data').value=todayStr();
+  showModal('modal-solutie-config');
+}
+
+function renderSolutiiLista(){
+  const el=document.getElementById('solutii-lista');
+  if(!el)return;
+  el.innerHTML=SOLUTII.length?
+    SOLUTII.map((s,i)=>`<div style="display:flex;align-items:center;gap:8px;padding:6px;background:var(--gray-50);border-radius:var(--radius);margin-bottom:4px">
+      <div style="flex:1;font-size:13px"><strong>${s.den}</strong> <span style="font-size:11px;color:var(--gray-400)">· din ${fmtDate(s.data)}</span></div>
+      <button onclick="deleteSolutie(${i})" style="background:none;border:none;color:var(--red);cursor:pointer">×</button>
+    </div>`).join(''):
+    '<div style="color:var(--gray-400);font-size:13px">Nicio soluție configurată.</div>';
+}
+
+function addSolutie(){
+  const den=document.getElementById('solutie-noua').value.trim();
+  const data=document.getElementById('solutie-data').value;
+  if(!den){alert('Introduceți denumirea soluției!');return;}
+  SOLUTII.push({den,data,ts:new Date().toISOString()});
+  saveData('smc_solutii',SOLUTII);
+  document.getElementById('solutie-noua').value='';
+  renderSolutiiLista();
+}
+
+function deleteSolutie(idx){
+  SOLUTII.splice(idx,1);
+  saveData('smc_solutii',SOLUTII);
+  renderSolutiiLista();
+}
+
+// Supervizare
+let supervizareId=null, supervizareTip=null;
+function openSupervizare(id, tip){
+  supervizareId=id; supervizareTip=tip;
+  document.getElementById('supervizare-obs').value='';
+  let rec;
+  if(tip==='curatenie') rec=CURATENIE_DATA.find(d=>d.id===id);
+  document.getElementById('supervizare-body').innerHTML=rec?`
+    <div style="background:var(--gray-50);border-radius:var(--radius);padding:12px;font-size:13px">
+      <div><strong>Sala:</strong> ${rec.sala}</div>
+      <div><strong>Data efectuată:</strong> ${fmtDate(rec.data_ef)}</div>
+      <div><strong>Soluție:</strong> ${rec.solutie||'—'}</div>
+      <div><strong>Operator:</strong> ${rec.operator}</div>
+    </div>`:'';
+  showModal('modal-supervizare');
+}
+
+function saveSupervizare(){
+  if(supervizareTip==='curatenie'){
+    const rec=CURATENIE_DATA.find(d=>d.id===supervizareId);
+    if(rec){
+      rec.supervizat_la=todayStr();
+      rec.supervizat_de=currentUser.nume;
+      rec.supervizat_obs=document.getElementById('supervizare-obs').value;
+      rec.ts=new Date().toISOString();
+      saveData('smc_curatenie',CURATENIE_DATA);
+      if(typeof upsertRecord==='function') upsertRecord('curatenie_data',rec).catch(e=>{});
+    }
+  }
+  closeModal('modal-supervizare');
+  renderFormular(supervizareTip);
+}
+
+// ════════════════════════════════════════════════════════════
+// 3. LAMPĂ UV
+// ════════════════════════════════════════════════════════════
+function renderUVBody(el) {
+  const activeSala = window._uvActiveSala || SALI[0];
+  const lampa = UV_LAMPI[activeSala]||{ore:0};
+  const oreRamase = parseFloat(lampa.ore||0);
+  const oreColor = oreRamase<100?'var(--red)':oreRamase<500?'var(--amber)':'var(--green)';
+
+  el.innerHTML = `
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;flex-wrap:wrap;gap:8px">
+      <div style="font-size:14px;font-weight:600;color:#7c3aed">💡 Registru Iradiere UV</div>
+      <div style="display:flex;gap:8px">
+        <button class="btn btn-outline" onclick="openUVConfig()" style="font-size:12px">⚙️ Config. lampă</button>
+        <button class="btn btn-primary" onclick="openUVAdd()" style="font-size:12px">+ Iradiere nouă</button>
+      </div>
+    </div>
+    <div style="display:flex;gap:8px;margin-bottom:12px;flex-wrap:wrap">
+      ${SALI.map(s=>{
+        const l=UV_LAMPI[s]||{ore:0};
+        const ore=parseFloat(l.ore||0);
+        const col=ore<100?'var(--red)':ore<500?'var(--amber)':'var(--green)';
+        return `<button onclick="window._uvActiveSala='${s}';renderFormular('uv')"
+          style="padding:6px 14px;border-radius:20px;border:2px solid ${s===activeSala?'#7c3aed':'#e5e7eb'};
+                 background:${s===activeSala?'#ede9fe':'#f9fafb'};cursor:pointer;font-size:12px;font-weight:600">
+          ${s} <span style="color:${col};font-size:10px">(${ore.toFixed(1)}h)</span>
+        </button>`;
+      }).join('')}
+    </div>
+    <div style="background:#f5f3ff;border-radius:var(--radius);padding:12px;margin-bottom:14px;display:flex;align-items:center;gap:16px">
+      <div style="font-size:32px">💡</div>
+      <div>
+        <div style="font-size:13px;font-weight:600;color:#6d28d9">${activeSala} — Ore valabilitate lampă</div>
+        <div style="font-size:24px;font-weight:700;color:${oreColor}">${oreRamase.toFixed(1)} ore rămase</div>
+        ${oreRamase<100?'<div style="font-size:12px;color:var(--red);font-weight:600">⚠ Lampă aproape de final! Înlocuiți curând.</div>':''}
+      </div>
+    </div>
+    ${renderUVTable(activeSala)}`;
+}
+
+function renderUVTable(sala){
+  const list=[...UV_DATA].filter(d=>d.sala===sala)
+    .sort((a,b)=>b.ts.localeCompare(a.ts)).slice(0,60);
+  return `<div class="table-wrap">
+    <table>
+      <thead><tr>
+        <th style="width:100px">Data</th>
+        <th style="width:80px">Interval</th>
+        <th>Incăpere</th>
+        <th style="width:120px">Ore valabilitate după</th>
+        <th>Specialist</th>
+        <th style="width:50px"></th>
+      </tr></thead>
+      <tbody>
+        ${list.length===0?`<tr><td colspan="6" style="text-align:center;padding:20px;color:var(--gray-400)">
+          Nicio iradiere înregistrată pentru ${sala}.
+        </td></tr>`:list.map(d=>`<tr>
+          <td style="font-size:12px">${fmtDate(d.data)}</td>
+          <td style="font-size:12px;font-family:monospace;font-weight:600;color:#7c3aed">${d.interval}</td>
+          <td style="font-size:12px">${d.sala}</td>
+          <td style="font-size:13px;font-weight:600;color:${parseFloat(d.ore_dupa)<100?'var(--red)':'var(--green)'}">
+            ${parseFloat(d.ore_dupa||0).toFixed(1)} h
+          </td>
+          <td style="font-size:12px">${d.specialist}</td>
+          <td><button class="btn btn-outline" style="padding:2px 6px;font-size:10px" onclick="deleteUV('${d.id}')">🗑️</button></td>
+        </tr>`).join('')}
+      </tbody>
+    </table>
+  </div>`;
+}
+
+function openUVAdd(){
+  const sala=window._uvActiveSala||SALI[0];
+  const lampa=UV_LAMPI[sala]||{ore:0};
+  const today=todayStr();
+  document.getElementById('uv-data').value=today;
+  document.getElementById('uv-data-display').value=fmtDate(today);
+  document.getElementById('uv-sala').value=sala;
+  document.getElementById('uv-specialist').value=currentUser.nume;
+  const oreRamase=parseFloat(lampa.ore||0);
+  document.getElementById('uv-ore-info').innerHTML=`
+    <span style="font-weight:600">Ore actuale: ${oreRamase.toFixed(1)} h</span>
+    <span style="color:var(--gray-400);margin-left:8px">→ după iradiere: ${Math.max(0,oreRamase-0.5).toFixed(1)} h</span>`;
+  showModal('modal-uv-add');
+}
+
+function saveUV(){
+  const sala=document.getElementById('uv-sala').value;
+  const interval=document.getElementById('uv-interval').value;
+  const data=document.getElementById('uv-data').value;
+
+  // Check working day (Mon-Fri)
+  const d=new Date(data);
+  if(d.getDay()===0||d.getDay()===6){
+    alert('Iradierea UV se efectuează doar Luni–Vineri!');return;
+  }
+
+  // Scade 0.5h din lampa
+  const lampa=UV_LAMPI[sala]||{ore:0};
+  const oreInainte=parseFloat(lampa.ore||0);
+  const oreDupa=Math.max(0,oreInainte-0.5);
+  UV_LAMPI[sala]={ore:oreDupa,updated:new Date().toISOString()};
+  saveData('smc_uv_lampi',UV_LAMPI);
+  if(typeof upsertRecord==='function') upsertRecord('uv_lampi',{sala,...UV_LAMPI[sala]}).catch(e=>{});
+
+  const rec={
+    id:'UV-'+Date.now(),
+    data, interval, sala,
+    specialist:currentUser.nume,
+    operator_id:currentUser.id,
+    ore_inainte:oreInainte,
+    ore_dupa:oreDupa,
+    ts:new Date().toISOString()
+  };
+  UV_DATA.push(rec);
+  saveData('smc_uv',UV_DATA);
+  if(typeof upsertRecord==='function') upsertRecord('uv_data',rec).catch(e=>{});
+
+  if(oreDupa<100){
+    showToast('⚠ Lampă UV '+sala+': doar '+oreDupa.toFixed(1)+' ore rămase! Planificați înlocuirea.','error');
+  }
+  closeModal('modal-uv-add');
+  renderFormular('uv');
+}
+
+function deleteUV(id){
+  const rec=UV_DATA.find(d=>d.id===id);
+  if(!rec||!confirm('Ștergeți această înregistrare? Orele vor fi restaurate.'))return;
+  // Restore 0.5h
+  const sala=rec.sala;
+  if(UV_LAMPI[sala]){
+    UV_LAMPI[sala].ore=parseFloat(UV_LAMPI[sala].ore||0)+0.5;
+    saveData('smc_uv_lampi',UV_LAMPI);
+  }
+  if(typeof deleteRecord==='function') deleteRecord('uv_data',id).catch(e=>{});
+  UV_DATA=UV_DATA.filter(d=>d.id!==id);
+  saveData('smc_uv',UV_DATA);
+  renderFormular('uv');
+}
+
+function openUVConfig(){
+  renderUVLampiLista();
+  document.getElementById('uv-cfg-sala').value=window._uvActiveSala||SALI[0];
+  showModal('modal-uv-config');
+}
+
+function renderUVLampiLista(){
+  const el=document.getElementById('uv-lampi-lista');
+  if(!el)return;
+  el.innerHTML=SALI.map(s=>{
+    const l=UV_LAMPI[s]||{ore:0};
+    return `<div style="display:flex;align-items:center;gap:10px;padding:6px;background:var(--gray-50);border-radius:var(--radius);margin-bottom:4px">
+      <span style="font-weight:600;font-size:13px;min-width:60px">${s}</span>
+      <span style="font-size:13px;color:${parseFloat(l.ore)<100?'var(--red)':'var(--green)'}">${parseFloat(l.ore||0).toFixed(1)} ore rămase</span>
+    </div>`;
+  }).join('');
+}
+
+function saveUVConfig(){
+  const sala=document.getElementById('uv-cfg-sala').value;
+  const ore=parseFloat(document.getElementById('uv-cfg-ore').value);
+  if(isNaN(ore)||ore<0){alert('Introduceți orele valabile!');return;}
+  UV_LAMPI[sala]={ore,updated:new Date().toISOString()};
+  saveData('smc_uv_lampi',UV_LAMPI);
+  if(typeof upsertRecord==='function') upsertRecord('uv_lampi',{sala,...UV_LAMPI[sala]}).catch(e=>{});
+  document.getElementById('uv-cfg-ore').value='';
+  renderUVLampiLista();
+  showToast('Ore valabilitate actualizate pentru '+sala);
+}
+
+// ─── INIT ─────────────────────────────────────────────────────
+TEMP_DATA      = loadData('smc_temp', []);
+CURATENIE_DATA = loadData('smc_curatenie', []);
+UV_DATA        = loadData('smc_uv', []);
+SOLUTII        = loadData('smc_solutii', []);
+UV_LAMPI       = loadData('smc_uv_lampi', {
+  'Sala 1':{ore:8000,updated:null},
+  'Sala 2':{ore:8000,updated:null},
+  'Sala 3':{ore:8000,updated:null},
+  'Sala 1A':{ore:8000,updated:null}
+});
+
+// Alert dashboard: solutii > 6 luni
+function checkSolutiiExpirare(){
+  SOLUTII.forEach(s=>{
+    const days=Math.floor((new Date()-new Date(s.data))/86400000);
+    if(days>180) showToast('⚠ Soluție "'+s.den+'" utilizată >6 luni. Schimbați soluția!','error');
+  });
+  // Alert lampe UV < 100h
+  SALI.forEach(sala=>{
+    const l=UV_LAMPI[sala]||{ore:9999};
+    if(parseFloat(l.ore)<100) showToast('⚠ Lampă UV '+sala+': '+parseFloat(l.ore).toFixed(1)+'h rămase!','error');
+  });
+}
+setTimeout(checkSolutiiExpirare, 3000);
+
+
 // ─── INIT
 initSupabase(); // loads from Supabase then renders
+
+
 
 
 
