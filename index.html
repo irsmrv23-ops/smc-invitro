@@ -6664,15 +6664,7 @@ function switchFormular(tip) {
   renderFormular(tip);
 }
 
-function renderFormular(tip) {
-  const el = document.getElementById('doc-nivel-4-body');
-  if(!el) return;
-
-  if(tip==='deseuri') renderDeseuriBody(el);
-  else if(tip==='echipamente') renderVerifEchBody(el);
-  else if(tip==='receptie') renderReceptieBody(el);
-  else if(tip==='biosiguranta') renderBiosigBody(el);
-}
+// renderFormular: unified version below
 
 // ─── NIVEL 5: Externe ─────────────────────────────────────────
 function renderDocNivel5() {
@@ -7573,10 +7565,10 @@ let CURATENIE_DATA= loadData('smc_curatenie', []);
 let UV_DATA       = loadData('smc_uv', []);
 let SOLUTII       = loadData('smc_solutii', []);
 let UV_LAMPI      = loadData('smc_uv_lampi', {
-  'Sala 1': {ore: 8000, updated: null},
-  'Sala 2': {ore: 8000, updated: null},
-  'Sala 3': {ore: 8000, updated: null},
-  'Sala 1A': {ore: 8000, updated: null}
+  'Sala 1': {ore: 0, updated: null},
+  'Sala 2': {ore: 0, updated: null},
+  'Sala 3': {ore: 0, updated: null},
+  'Sala 1A': {ore: 0, updated: null}
 });
 
 const SALI = ['Sala 1', 'Sala 2', 'Sala 3', 'Sala 1A'];
@@ -7584,14 +7576,16 @@ const TEMP_MIN=18, TEMP_MAX=24, UMID_MIN=65, UMID_MAX=75;
 const CURATENIE_ZI = 1; // luni
 
 // ── UPDATE renderFormular to handle new types ──────────────────
-const _origRenderFormular = renderFormular;
 function renderFormular(tip) {
   const el = document.getElementById('doc-nivel-4-body');
   if(!el) return;
-  if(tip==='temperatura') renderTemperaturaBody(el);
-  else if(tip==='curatenie') renderCuratenieBody(el);
-  else if(tip==='uv') renderUVBody(el);
-  else _origRenderFormular(tip);
+  if(tip==='deseuri')       renderDeseuriBody(el);
+  else if(tip==='echipamente')  renderVerifEchBody(el);
+  else if(tip==='receptie')     renderReceptieBody(el);
+  else if(tip==='biosiguranta') renderBiosigBody(el);
+  else if(tip==='temperatura')  renderTemperaturaBody(el);
+  else if(tip==='curatenie')    renderCuratenieBody(el);
+  else if(tip==='uv')           renderUVBody(el);
 }
 
 // ════════════════════════════════════════════════════════════
@@ -8004,6 +7998,8 @@ function renderUVBody(el) {
   const activeSala = window._uvActiveSala || SALI[0];
   const lampa = UV_LAMPI[activeSala]||{ore:0};
   const oreRamase = parseFloat(lampa.ore||0);
+  // Show setup prompt if lamp not configured
+  const needsSetup = SALI.some(s=>!UV_LAMPI[s]||UV_LAMPI[s].ore===0);
   const oreColor = oreRamase<100?'var(--red)':oreRamase<500?'var(--amber)':'var(--green)';
 
   el.innerHTML = `
@@ -8014,6 +8010,7 @@ function renderUVBody(el) {
         <button class="btn btn-primary" onclick="openUVAdd()" style="font-size:12px">+ Iradiere nouă</button>
       </div>
     </div>
+    ${needsSetup?'<div style="background:#fef3c7;border:1px solid #f59e0b;border-radius:var(--radius);padding:12px;margin-bottom:14px;font-size:13px">⚙️ <strong>Configurați orele de valabilitate rămase</strong> pentru fiecare lampă UV înainte de prima utilizare. <button class="btn btn-primary" style="margin-left:10px;padding:4px 12px;font-size:12px" onclick="openUVConfig()">Configurează acum</button></div>':''}
     <div style="display:flex;gap:8px;margin-bottom:12px;flex-wrap:wrap">
       ${SALI.map(s=>{
         const l=UV_LAMPI[s]||{ore:0};
@@ -8173,10 +8170,10 @@ CURATENIE_DATA = loadData('smc_curatenie', []);
 UV_DATA        = loadData('smc_uv', []);
 SOLUTII        = loadData('smc_solutii', []);
 UV_LAMPI       = loadData('smc_uv_lampi', {
-  'Sala 1':{ore:8000,updated:null},
-  'Sala 2':{ore:8000,updated:null},
-  'Sala 3':{ore:8000,updated:null},
-  'Sala 1A':{ore:8000,updated:null}
+  'Sala 1':{ore:0,updated:null},
+  'Sala 2':{ore:0,updated:null},
+  'Sala 3':{ore:0,updated:null},
+  'Sala 1A':{ore:0,updated:null}
 });
 
 // Alert dashboard: solutii > 6 luni
